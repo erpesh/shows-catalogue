@@ -12,6 +12,9 @@ namespace Catalogue.Models
         public string Username { get; set; }
         public string HashedPassword { get; set; }
 
+        private const string UsersFilePath = "users.json";
+        private const string CurrentUserFilePath = "currentuser.txt";
+
         public static void RegisterUser(string username, string password)
         {
             var users = LoadUsers();
@@ -34,7 +37,7 @@ namespace Catalogue.Models
             var user = users.Find(u => u.Username == username);
             if (user != null && PasswordHasher.VerifyPassword(user.HashedPassword, password))
             {
-                File.WriteAllText("currentuser.txt", username); // Store current user in a file
+                File.WriteAllText(CurrentUserFilePath, username); // Store current user in a file
                 Console.WriteLine("Login successful.");
                 return true;
             }
@@ -47,9 +50,9 @@ namespace Catalogue.Models
 
         public static string GetCurrentLoggedInUser()
         {
-            if (File.Exists("currentuser.txt"))
+            if (File.Exists(CurrentUserFilePath))
             {
-                return File.ReadAllText("currentuser.txt");
+                return File.ReadAllText(CurrentUserFilePath);
             }
             return null;
         }
@@ -57,9 +60,9 @@ namespace Catalogue.Models
         public static List<User> LoadUsers()
         {
             List<User> users = new List<User>();
-            if (File.Exists("users.json"))
+            if (File.Exists(UsersFilePath))
             {
-                string json = File.ReadAllText("users.json");
+                string json = File.ReadAllText(UsersFilePath);
                 try
                 {
                     users = JsonSerializer.Deserialize<List<User>>(json);
@@ -76,7 +79,7 @@ namespace Catalogue.Models
         private static void SaveUsers(List<User> users)
         {
             string json = JsonSerializer.Serialize(users);
-            File.WriteAllText("users.json", json);
+            File.WriteAllText(UsersFilePath, json);
         }
     }
 }

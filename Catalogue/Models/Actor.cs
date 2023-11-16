@@ -8,16 +8,11 @@ namespace Catalogue.Models
 {
     public class Actor : Person
     {
-        public Actor(string firstName, string lastName, DateTime dateOfBirth)
+        public Actor(string firstName, string lastName, DateOnly dateOfBirth)
             : base(firstName, lastName, dateOfBirth)
         {
         }
 
-        public override void DisplayInfo()
-        {
-            base.DisplayInfo();
-            Console.WriteLine("Actor");
-        }
     }
 
 }

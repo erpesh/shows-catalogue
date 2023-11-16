@@ -6,76 +6,90 @@ namespace Catalogue
     {
         static void Main()
         {
+            User user = User.LoadUsers()[0];
             string currentUser = User.GetCurrentLoggedInUser();
 
-            if (currentUser != null)
-            {
-                Console.WriteLine($"Welcome, {currentUser}!");
-            }
-            else
-            {
-                Console.WriteLine("No user is currently logged in.");
-            }
+            var show = new Film(
+                "Title2", 
+                "Description",
+                new List<string> { "genre1", "genre2" },
+                new List<string> { "studio" },
+                new Person("First", "Last", new DateOnly()),
+                new List<Actor> { new Actor("Actor", "Second", new DateOnly()) },
+                100,
+                new DateOnly()
+                );
 
-            while (true)
-            {
-                Console.WriteLine("\nChoose an option:");
-                Console.WriteLine("1. Register");
-                Console.WriteLine("2. Login");
-                Console.WriteLine("3. Exit");
+            show.AddRating(user, 9);
 
-                string choice = Console.ReadLine();
+        //    if (currentUser != null)
+        //    {
+        //        Console.WriteLine($"Welcome, {currentUser}!");
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("No user is currently logged in.");
+        //    }
 
-                switch (choice)
-                {
-                    case "1":
-                        Console.Write("Enter your username: ");
-                        string username = Console.ReadLine();
-                        Console.Write("Enter your password: ");
-                        string password = Console.ReadLine();
+        //    while (true)
+        //    {
+        //        Console.WriteLine("\nChoose an option:");
+        //        Console.WriteLine("1. Register");
+        //        Console.WriteLine("2. Login");
+        //        Console.WriteLine("3. Exit");
 
-                        User.RegisterUser(username, password);
-                        break;
+        //        string choice = Console.ReadLine();
 
-                    case "2":
-                        Console.Write("Enter your username: ");
-                        string loginUsername = Console.ReadLine();
-                        Console.Write("Enter your password: ");
-                        string loginPassword = Console.ReadLine();
+        //        switch (choice)
+        //        {
+        //            case "1":
+        //                Console.Write("Enter your username: ");
+        //                string username = Console.ReadLine();
+        //                Console.Write("Enter your password: ");
+        //                string password = Console.ReadLine();
 
-                        User.Login(loginUsername, loginPassword);
-                        break;
+        //                User.RegisterUser(username, password);
+        //                break;
 
-                    case "3":
-                        Environment.Exit(0);
-                        break;
+        //            case "2":
+        //                Console.Write("Enter your username: ");
+        //                string loginUsername = Console.ReadLine();
+        //                Console.Write("Enter your password: ");
+        //                string loginPassword = Console.ReadLine();
 
-                    case "4":
-                        DisplayAllUsers();
-                        break;
+        //                User.Login(loginUsername, loginPassword);
+        //                break;
 
-                    default:
-                        Console.WriteLine("Invalid choice. Please try again.");
-                        break;
-                }
-            }
-        }
-        static void DisplayAllUsers()
-        {
-            var users = User.LoadUsers();
+        //            case "3":
+        //                Environment.Exit(0);
+        //                break;
 
-            if (users.Count > 0)
-            {
-                Console.WriteLine("Registered Users:");
-                foreach (var user in users)
-                {
-                    Console.WriteLine(user.Username);
-                }
-            }
-            else
-            {
-                Console.WriteLine("No registered users yet.");
-            }
+        //            case "4":
+        //                DisplayAllUsers();
+        //                break;
+
+        //            default:
+        //                Console.WriteLine("Invalid choice. Please try again.");
+        //                break;
+        //        }
+        //    }
+        //}
+        //static void DisplayAllUsers()
+        //{
+        //    var users = User.LoadUsers();
+
+        //    if (users.Count > 0)
+        //    {
+        //        Console.WriteLine("Registered Users:");
+        //        foreach (var user in users)
+        //        {
+        //            Console.WriteLine(user.Username);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("No registered users yet.");
+        //    }
         }
     }
 }

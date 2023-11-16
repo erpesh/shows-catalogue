@@ -8,10 +8,31 @@ namespace Catalogue.Models
 {
     class Series : Show
     {
-        private int? Seasons { get; set; }
-        private int? Episodes { get; set; }
-        private DateOnly? StartDate { get; set; }
-        private DateOnly? EndDate { get; set; }
+        private int? seasons;
+        private int? episodes;
+        private DateOnly? startDate;
+        private DateOnly? endDate;
+
+        public int? Seasons
+        {
+            get => seasons;
+            set => seasons = value;
+        }
+        public int? Episodes
+        {
+            get => episodes;
+            set => episodes = value;
+        }
+        public DateOnly? StartDate
+        {
+            get => startDate;
+            set => startDate = value;
+        }
+        public DateOnly? EndDate
+        {
+            get => endDate;
+            set => endDate = value;
+        }
 
         public Series(
             string title,
@@ -19,8 +40,6 @@ namespace Catalogue.Models
             List<string> genres,
             List<string> studios,
             Person director,
-            int ratings,
-            double avgRating,
             List<Actor> actors,
             int episodeLength,
             int seasons, 
@@ -34,6 +53,18 @@ namespace Catalogue.Models
             Episodes = episodes;
             StartDate = startDate;
             EndDate = endDate;
+        }
+
+        protected override void CopyProperties(Show source)
+        {
+            base.CopyProperties(source);
+            if (source is Series seriesSource)
+            {
+                Seasons = seriesSource.Seasons;
+                Episodes = seriesSource.Episodes;
+                StartDate = seriesSource.StartDate;
+                EndDate = seriesSource.EndDate;
+            }
         }
     }
 }

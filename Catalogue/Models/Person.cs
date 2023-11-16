@@ -10,18 +10,13 @@ namespace Catalogue.Models
     {
         protected string FirstName { get; set; }
         protected string LastName { get; set; }
-        protected DateTime? DateOfBirth { get; set; }
+        protected DateOnly? DateOfBirth { get; set; }
 
-        public Person(string firstName, string lastName, DateTime dateOfBirth)
+        public Person(string firstName, string lastName, DateOnly dateOfBirth)
         {
             FirstName = firstName;
             LastName = lastName;
             DateOfBirth = dateOfBirth;
-        }
-
-        public virtual void DisplayInfo()
-        {
-            Console.WriteLine($"{FirstName} {LastName}, DOB: {DateOfBirth.ToShortDateString()}");
         }
     }
 
