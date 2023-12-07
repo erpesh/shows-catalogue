@@ -8,15 +8,38 @@ namespace Catalogue.Models
 {
     public class Person
     {
-        protected string FirstName { get; set; }
-        protected string LastName { get; set; }
-        protected DateOnly? DateOfBirth { get; set; }
+        protected int id;
+        protected string firstName;
+        protected string lastName;
+        protected DateOnly? dateOfBirth;
 
-        public Person(string firstName, string lastName, DateOnly dateOfBirth)
+        public int Id
         {
-            FirstName = firstName;
-            LastName = lastName;
-            DateOfBirth = dateOfBirth;
+            get => id;
+            set => id = value;
+        }
+        public string FirstName
+        {
+            get => firstName;
+            set => firstName = value;
+        }
+        public string LastName
+        {
+            get => lastName;
+            set => lastName = value;
+        }
+        public DateOnly? DateOfBirth
+        {
+            get => dateOfBirth;
+            set => dateOfBirth = value;
+        }
+
+        public Person(int _id, string _firstName, string _lastName, DateOnly _dateOfBirth)
+        {
+            Id = _id;
+            FirstName = _firstName;
+            LastName = _lastName;
+            DateOfBirth = _dateOfBirth;
         }
     }
 

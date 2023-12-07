@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Catalogue.Models
 {
-    class ShowRating
+    public class ShowRating
     {
         public string Username { get; set; }
         public int Rating { get; set; }

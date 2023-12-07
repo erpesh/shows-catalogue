@@ -7,21 +7,31 @@ using System.Threading.Tasks;
 
 namespace Catalogue.Models
 {
-    abstract class Show
+    public abstract class Show
     {
-        private readonly string showsFolder = "shows";
-        private string FilePath => Path.Combine(showsFolder, $"{title}.json");
-
+        protected int id;
         protected string title;
         protected string? description;
         protected List<string> genres;
-        protected List<string> studios;
+        protected string studio;
         protected Person director;
         protected List<ShowRating> ratings = new List<ShowRating> { };
         protected double? avgRating;
         protected List<Actor> actors;
         protected int? episodeLength;
 
+        public int Id
+        {
+            get => id;
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException();
+                else if (value < 1)
+                    throw new ArgumentException("ID can't be less than 1");
+                id = value;
+            }
+        }
         public string Title
         {
             get => title;
@@ -51,10 +61,10 @@ namespace Catalogue.Models
             get => genres;
             set => genres = value;
         }
-        public List<string> Studios
+        public string Studio
         {
-            get => studios;
-            set => studios = value;
+            get => studio;
+            set => studio = value;
         }
         public Person Director
         {
@@ -89,31 +99,28 @@ namespace Catalogue.Models
             }
         }
 
-        public Show(string title)
+        public Show(int _id)
         {
-            Title = title;
             LoadFromFile();
         }
 
         public Show(
-            string title, 
-            string description,
-            List<string> genres,
-            List<string> studios,
-            Person director,
-            List<Actor> actors,
-            int episodeLength
+            string _title, 
+            string _description,
+            List<string> _genres,
+            string _studio,
+            Person _director,
+            List<Actor> _actors,
+            int _episodeLength
         )
         {
-            Title = title;
-            Description = description;
-            Genres = genres;
-            Studios = studios;
-            Director = director;
-            Actors = actors;
-            EpisodeLength = episodeLength;
-
-            UpdateFile();
+            Title = _title;
+            Description = _description;
+            Genres = _genres;
+            Studio = _studio;
+            Director = _director;
+            Actors = _actors;
+            EpisodeLength = _episodeLength;
         }
 
         protected void UpdateFile()
@@ -125,7 +132,20 @@ namespace Catalogue.Models
         {
             var showRating = new ShowRating(user.Username, rating);
             ratings.Add(showRating);
-            UpdateFile(); // Save changes to file after adding new ratings
+
+            AvgRating = CalculateAvgRating();
+
+            UpdateFile();
+        }
+
+        protected double CalculateAvgRating()
+        {
+            if (Ratings.Count == 0) return 0;
+            
+            double totalRating = Ratings.Sum(r => r.Rating);
+            double avgRating = totalRating / Ratings.Count;
+
+            return avgRating;
         }
 
         private void SaveToFile()
@@ -158,10 +178,11 @@ namespace Catalogue.Models
 
         protected virtual void CopyProperties(Show source)
         {
+            Id = source.Id;
             Title = source.Title;
             Description = source.Description;
             Genres = source.Genres;
-            Studios = source.Studios;
+            Studio = source.Studio;
             Director = source.Director;
             Ratings = source.Ratings;
             AvgRating = source.AvgRating;

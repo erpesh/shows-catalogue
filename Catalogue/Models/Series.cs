@@ -35,24 +35,24 @@ namespace Catalogue.Models
         }
 
         public Series(
-            string title,
-            string description,
-            List<string> genres,
-            List<string> studios,
-            Person director,
-            List<Actor> actors,
-            int episodeLength,
-            int seasons, 
-            int episodes, 
-            DateOnly startDate, 
-            DateOnly endDate
+            string _title,
+            string _description,
+            List<string> _genres,
+            string _studio,
+            Person _director,
+            List<Actor> _actors,
+            int _episodeLength,
+            int _seasons, 
+            int _episodes, 
+            DateOnly _startDate, 
+            DateOnly _endDate
         )
-            : base(title, description, genres, studios, director, actors, episodeLength)
+            : base(_title, _description, _genres, _studio, _director, _actors, _episodeLength)
         {
-            Seasons = seasons;
-            Episodes = episodes;
-            StartDate = startDate;
-            EndDate = endDate;
+            Seasons = _seasons;
+            Episodes = _episodes;
+            StartDate = _startDate;
+            EndDate = _endDate;
         }
 
         protected override void CopyProperties(Show source)
@@ -65,6 +65,8 @@ namespace Catalogue.Models
                 StartDate = seriesSource.StartDate;
                 EndDate = seriesSource.EndDate;
             }
+
+            UpdateFile();
         }
     }
 }

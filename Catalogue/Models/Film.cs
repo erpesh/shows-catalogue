@@ -16,18 +16,18 @@ namespace Catalogue.Models
         }
 
         public Film(
-            string title,
-            string description,
-            List<string> genres,
-            List<string> studios,
-            Person director,
-            List<Actor> actors,
-            int episodeLength,
-            DateOnly releaseDate
+            string _title,
+            string _description,
+            List<string> _genres,
+            string _studio,
+            Person _director,
+            List<Actor> _actors,
+            int _episodeLength,
+            DateOnly _releaseDate
         )
-            : base(title, description, genres, studios, director, actors, episodeLength)
+            : base(_title, _description, _genres, _studio, _director, _actors, _episodeLength)
         {
-            ReleaseDate = releaseDate;
+            ReleaseDate = _releaseDate;
         }
 
         protected override void CopyProperties(Show source)
@@ -37,6 +37,8 @@ namespace Catalogue.Models
             {
                 ReleaseDate = filmSource.ReleaseDate;
             }
+
+            UpdateFile();
         }
     }
 }
