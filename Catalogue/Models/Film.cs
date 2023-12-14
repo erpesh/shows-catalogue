@@ -38,7 +38,7 @@ namespace Catalogue.Models
                 ReleaseDate = filmSource.ReleaseDate;
             }
 
-            UpdateFile();
+            //UpdateFile();
         }
     }
 }

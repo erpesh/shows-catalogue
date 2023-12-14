@@ -40,12 +40,22 @@ namespace Catalogue.Models
                 case "logout":
                     break;
                 case "addfilm":
+                    //InputFilm();
                     break;
                 case "addseries":
                     break;
                 case "addactor":
                     break;
+                case "addperson":
+                    var person = InputPerson();
+                    DataStorage.SaveStaffMember(person);
+                    break;
                 case "search":
+                    var members = DataStorage.LoadStaff();
+                    foreach (var member in members)
+                    {
+                        Console.WriteLine($"{member.FirstName} {member.LastName}");
+                    }
                     break;
                 case "":
                     break;
@@ -59,53 +69,69 @@ namespace Catalogue.Models
         {
             while (true)
             {
+                Console.WriteLine("Enter person details:");
 
+                Console.Write("First Name: ");
+                string firstName = Console.ReadLine();
+
+                Console.Write("Last Name: ");
+                string lastName = Console.ReadLine();
+
+                Console.Write("Date of Birth (YYYY-MM-DD): ");
+                DateOnly dateOfBirth = DateOnly.Parse(Console.ReadLine());
+
+                Console.Write("Nationality: ");
+                string nationality = Console.ReadLine();
+
+                Person newPerson = new Person(firstName, lastName, dateOfBirth, nationality);
+
+                return newPerson;
             }
         }
 
-        private void AddFilm(string[] args)
-        {
-            while (true)
-            {
-                Console.Write("Enter the title: ");
-                string title = Console.ReadLine().Trim();
+        //private Film InputFilm()
+        //{
+        //    while (true)
+        //    {
+        //        Console.WriteLine("Enter film details:");
 
-                Console.Write("Enter the description: ");
-                string description = Console.ReadLine().Trim();
+        //        Console.Write("Title: ");
+        //        string title = Console.ReadLine();
 
-                Console.Write("Enter genres (comma-separated): ");
-                List<string> genres = Console.ReadLine().Split(',').ToList();
+        //        Console.Write("Description: ");
+        //        string description = Console.ReadLine();
 
-                Console.Write("Enter studio: ");
-                string studio = Console.ReadLine().Trim();
+        //        Console.Write("Genre: ");
+        //        string genre = Console.ReadLine();
 
-                Console.Write("Enter the director's name: ");
-                string directorName = Console.ReadLine().Trim();
+        //        Console.Write("Studio: ");
+        //        string studio = Console.ReadLine();
 
-                Console.Write("Enter the episode length (in minutes): ");
-                if (!int.TryParse(Console.ReadLine().Trim(), out int episodeLength) || episodeLength <= 0)
-                {
-                    Console.WriteLine("Invalid episode length. It must be a positive integer.");
-                    continue;
-                }
+        //        // Input director details using the InputPerson function
+        //        Person director = InputPerson();
 
-                Console.Write("Enter the release date (YYYY-MM-DD): ");
-                if (!DateTime.TryParse(Console.ReadLine().Trim(), out DateTime releaseDate))
-                {
-                    Console.WriteLine("Invalid release date. It must be a valid date in the format YYYY-MM-DD.");
-                    continue;
-                }
+        //        // Input actors details using the InputPerson function for each actor
+        //        List<Actor> actors = new List<Actor>();
+        //        Console.Write("Enter the number of actors: ");
+        //        int numberOfActors = int.Parse(Console.ReadLine());
 
-                // Find the director in the existing list or create a new one
-                Person director = new Person(directorName);
+        //        for (int i = 0; i < numberOfActors; i++)
+        //        {
+        //            Console.WriteLine($"Enter details for Actor {i + 1}:");
+        //            actors.Add(InputPerson());
+        //        }
 
-                // Create the film object
-                Film newFilm = new Film(1, title, description, genres, studio, director, new List<Actor>(), episodeLength, DateOnly.FromDateTime(releaseDate));
+        //        Console.Write("Episode Length (in minutes, if applicable): ");
+        //        int? episodeLength = int.TryParse(Console.ReadLine(), out int length) ? length : (int?)null;
 
-                // Print a success message
-                Console.WriteLine($"Film '{title}' added successfully!");
-                break; // Exit the loop if everything is successful
-            }
-        }
+        //        Console.Write("Release Date (YYYY-MM-DD): ");
+        //        DateOnly? releaseDate = DateOnly.TryParse(Console.ReadLine(), out DateOnly date) ? date : (DateOnly?)null;
+
+        //        // Creating and returning a new Film object
+        //        Film newFilm = new Film(title, description, new List<string> { genre }, studio, director, actors, episodeLength, releaseDate);
+
+        //        return newFilm;
+        //    }
+        //}
     }
 }

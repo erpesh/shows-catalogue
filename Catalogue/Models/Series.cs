@@ -66,7 +66,7 @@ namespace Catalogue.Models
                 EndDate = seriesSource.EndDate;
             }
 
-            UpdateFile();
+            //UpdateFile();
         }
     }
 }

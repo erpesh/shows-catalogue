@@ -17,6 +17,10 @@ namespace Catalogue.Models
         {
             return LoadEntities<Show>(ShowsFilePath);
         }
+        public static List<Person> LoadStaff()
+        {
+            return LoadEntities<Person>(StaffMembersFilePath);
+        }
         public static void SaveShow(Show show)
         {
             List<Show> shows = LoadShows();

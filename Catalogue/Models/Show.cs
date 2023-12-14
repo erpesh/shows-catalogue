@@ -99,10 +99,10 @@ namespace Catalogue.Models
             }
         }
 
-        public Show(int _id)
-        {
-            LoadFromFile();
-        }
+        //public Show(int _id)
+        //{
+        //    LoadFromFile();
+        //}
 
         public Show(
             string _title, 
@@ -123,20 +123,20 @@ namespace Catalogue.Models
             EpisodeLength = _episodeLength;
         }
 
-        protected void UpdateFile()
-        {
-            SaveToFile();
-        }
+        //protected void UpdateFile()
+        //{
+        //    SaveToFile();
+        //}
 
-        public void AddRating(User user, int rating)
-        {
-            var showRating = new ShowRating(user.Username, rating);
-            ratings.Add(showRating);
+        //public void AddRating(User user, int rating)
+        //{
+        //    var showRating = new ShowRating(user.Username, rating);
+        //    ratings.Add(showRating);
 
-            AvgRating = CalculateAvgRating();
+        //    AvgRating = CalculateAvgRating();
 
-            UpdateFile();
-        }
+        //    UpdateFile();
+        //}
 
         protected double CalculateAvgRating()
         {
@@ -148,33 +148,33 @@ namespace Catalogue.Models
             return avgRating;
         }
 
-        private void SaveToFile()
-        {
-            string directoryPath = Path.GetDirectoryName(FilePath);
-            if (!Directory.Exists(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
+        //private void SaveToFile()
+        //{
+        //    string directoryPath = Path.GetDirectoryName(FilePath);
+        //    if (!Directory.Exists(directoryPath))
+        //    {
+        //        Directory.CreateDirectory(directoryPath);
+        //    }
 
-            string json = JsonConvert.SerializeObject(this, Formatting.Indented);
-            File.WriteAllText(FilePath, json);
-        }
+        //    string json = JsonConvert.SerializeObject(this, Formatting.Indented);
+        //    File.WriteAllText(FilePath, json);
+        //}
 
-        protected void LoadFromFile()
-        {
-            if (File.Exists(FilePath))
-            {
-                string json = File.ReadAllText(FilePath);
-                var loadedShow = JsonConvert.DeserializeObject<Show>(json);
+        //protected void LoadFromFile()
+        //{
+        //    if (File.Exists(FilePath))
+        //    {
+        //        string json = File.ReadAllText(FilePath);
+        //        var loadedShow = JsonConvert.DeserializeObject<Show>(json);
 
-                // Copy properties from loaded show to the current instance
-                CopyProperties(loadedShow);
-            }
-            else
-            {
-                // Handle the case when the file does not exist
-            }
-        }
+        //        // Copy properties from loaded show to the current instance
+        //        CopyProperties(loadedShow);
+        //    }
+        //    else
+        //    {
+        //        // Handle the case when the file does not exist
+        //    }
+        //}
 
         protected virtual void CopyProperties(Show source)
         {
