@@ -114,6 +114,15 @@ namespace Catalogue.Models
             Reviews.Add(review);
             AvgRating = CalculateAvgRating();
         }
+        public void DeleteReview(string username)
+        {
+            Review review = Reviews.Find(r => r.Username == username);
+            if (review != null)
+            {
+                Reviews.Remove(review);
+                AvgRating = CalculateAvgRating();
+            }
+        }
 
         protected double CalculateAvgRating()
         {

@@ -8,7 +8,7 @@ namespace Catalogue.Models
 {
     class CommandLineInterface
     {
-        private readonly string appName = "Catalogue";
+        private const string appName = "Catalogue";
         private readonly string[] commands = { 
             "help", 
             "register",
@@ -62,39 +62,64 @@ namespace Catalogue.Models
                     }
                     break;
                 case "review":
-                    if (args.Length < 2)
+                    if (args.Length < 4)
                     {
-                        Console.WriteLine("Please specify a subcommand. Available subcommands: add, delete");
+                        Console.WriteLine("Please specify a subcommand (add, delete), type (film, series), and ID.");
                         return;
-                    }   
+                    }
+
+                    string[] subcommands = { "add", "delete" };
+                    string[] types = { "film", "series" };
 
                     string subcommand = args[1].ToLower();
                     string type = args[2].ToLower();
-                    string id = args[3];
-                    switch (subcommand)
+                    int id = int.Parse(args[3]);
+
+                    if (!subcommands.Contains(subcommand))
                     {
-                        case "add":
-                            if (type == "film")
-                            {
-                                var show = DataStorage.LoadFilm(int.Parse(id));
-                                var review = InputReview();
-                                show.AddReview(review);
-                                DataStorage.UpdateFilm(show);
-                            }
-                            else if (type == "series")
-                            {
-                                var show = DataStorage.LoadSeries(int.Parse(id));
-                                var review = InputReview();
-                                show.AddReview(review);
-                                DataStorage.UpdateSeries(show);
-                            }
-                            else
-                            {
-                                Console.WriteLine("Invalid type. Available types: film, series");
-                            }
-                            break;
-                        case "delete":
-                            break;
+                        Console.WriteLine("Invalid subcommand. Available subcommands: add, delete");
+                        return;
+                    }
+                    if (!types.Contains(type))
+                    {
+                        Console.WriteLine("Invalid type. Available types: film, series");
+                        return;
+                    }
+                    
+
+                    if (subcommand == "add")
+                    {
+                        if (type == "film")
+                        {
+                            var show = DataStorage.LoadFilm(id);
+                            var review = InputReview();
+                            show.AddReview(review);
+                            DataStorage.UpdateFilm(show);
+                        }
+                        else if (type == "series")
+                        {
+                            var show = DataStorage.LoadSeries(id);
+                            var review = InputReview();
+                            show.AddReview(review);
+                            DataStorage.UpdateSeries(show);
+                        }
+                        Console.WriteLine("Review added.");
+                    }
+                    else if (subcommand == "delete")
+                    {
+                        if (type == "film")
+                        {
+                            var show = DataStorage.LoadFilm(id);
+                            show.DeleteReview("erp");
+                            DataStorage.UpdateFilm(show);
+                        }
+                        else if (type == "series")
+                        {
+                            var show = DataStorage.LoadSeries(id);
+                            show.DeleteReview("erp");
+                            DataStorage.UpdateSeries(show);
+                        }
+                        Console.WriteLine("Review deleted.");
                     }
                     break;
                 case "":
@@ -209,11 +234,12 @@ namespace Catalogue.Models
             Console.Write("Rating (1-10): ");
             if (!int.TryParse(Console.ReadLine(), out int rating) || rating < 1 || rating > 10)
             {
-                throw new FormatException("Invalid rating. Please enter a valid integer between 1 and 5.");
+                throw new FormatException("Invalid rating. Please enter a valid integer between 1 and 10.");
             }
 
             Console.Write("Comment (optional): ");
             string? comment = Console.ReadLine();
+            comment = string.IsNullOrWhiteSpace(comment) ? null : comment;
 
             return new Review(username, rating, comment);
         }
