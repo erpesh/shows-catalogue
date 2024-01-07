@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +14,7 @@ namespace Catalogue.Models
         protected List<string> genres;
         protected string studio;
         protected string director;
-        protected List<ShowRating> ratings = new List<ShowRating> { };
+        protected List<Review> reviews = new List<Review> { };
         protected double? avgRating;
         protected List<string> actors;
         protected int? episodeLength;
@@ -25,9 +24,7 @@ namespace Catalogue.Models
             get => id;
             set
             {
-                if (value == null)
-                    throw new ArgumentNullException();
-                else if (value < 1)
+                if (value < 1)
                     throw new ArgumentException("ID can't be less than 1");
                 id = value;
             }
@@ -37,9 +34,7 @@ namespace Catalogue.Models
             get => title;
             set
             {
-                if (value == null)
-                    throw new ArgumentNullException();
-                else if (value.Length > 1000)
+                if (value.Length > 1000)
                     throw new ArgumentException("The title is too long.");
                 title = value;
             }
@@ -49,9 +44,7 @@ namespace Catalogue.Models
             get => description;
             set
             {
-                if (value == null)
-                    throw new ArgumentNullException();
-                else if (value.Length > 1000)
+                if (value != null && value.Length > 1000)
                     throw new ArgumentException("The title is too long.");
                 description = value;
             }
@@ -71,10 +64,10 @@ namespace Catalogue.Models
             get => director;
             set => director = value;
         }
-        public List<ShowRating> Ratings
+        public List<Review> Reviews
         {
-            get => ratings;
-            set => ratings = value;
+            get => reviews;
+            set => reviews = value;
         }
         public double? AvgRating
         {
@@ -91,9 +84,7 @@ namespace Catalogue.Models
             get => episodeLength;
             set
             {
-                if (value == null)
-                    throw new ArgumentNullException();
-                else if (value <= 0)
+                if (value <= 0)
                     throw new ArgumentException("Episode length can be only a positive number in minutes.");
                 episodeLength = value;
             }
@@ -118,58 +109,21 @@ namespace Catalogue.Models
             EpisodeLength = _episodeLength;
         }
 
-        //protected void UpdateFile()
-        //{
-        //    SaveToFile();
-        //}
-
-        //public void AddRating(User user, int rating)
-        //{
-        //    var showRating = new ShowRating(user.Username, rating);
-        //    ratings.Add(showRating);
-
-        //    AvgRating = CalculateAvgRating();
-
-        //    UpdateFile();
-        //}
+        public void AddReview(Review review)
+        {
+            Reviews.Add(review);
+            AvgRating = CalculateAvgRating();
+        }
 
         protected double CalculateAvgRating()
         {
-            if (Ratings.Count == 0) return 0;
+            if (Reviews.Count == 0) return 0;
             
-            double totalRating = Ratings.Sum(r => r.Rating);
-            double avgRating = totalRating / Ratings.Count;
+            double totalRating = Reviews.AsParallel().Sum(r => r.Rating);
+            double avgRating = totalRating / Reviews.Count;
 
             return avgRating;
         }
-
-        //private void SaveToFile()
-        //{
-        //    string directoryPath = Path.GetDirectoryName(FilePath);
-        //    if (!Directory.Exists(directoryPath))
-        //    {
-        //        Directory.CreateDirectory(directoryPath);
-        //    }
-
-        //    string json = JsonConvert.SerializeObject(this, Formatting.Indented);
-        //    File.WriteAllText(FilePath, json);
-        //}
-
-        //protected void LoadFromFile()
-        //{
-        //    if (File.Exists(FilePath))
-        //    {
-        //        string json = File.ReadAllText(FilePath);
-        //        var loadedShow = JsonConvert.DeserializeObject<Show>(json);
-
-        //        // Copy properties from loaded show to the current instance
-        //        CopyProperties(loadedShow);
-        //    }
-        //    else
-        //    {
-        //        // Handle the case when the file does not exist
-        //    }
-        //}
 
         protected virtual void CopyProperties(Show source)
         {
@@ -179,7 +133,7 @@ namespace Catalogue.Models
             Genres = source.Genres;
             Studio = source.Studio;
             Director = source.Director;
-            Ratings = source.Ratings;
+            Reviews = source.Reviews;
             AvgRating = source.AvgRating;
             Actors = source.Actors;
             EpisodeLength = source.EpisodeLength;

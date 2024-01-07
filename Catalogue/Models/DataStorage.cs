@@ -1,14 +1,19 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Catalogue.Models
 {
     public static class DataStorage
     {
+        private static readonly JsonSerializerOptions options = new JsonSerializerOptions
+        {
+            IncludeFields = true
+        };
+
         private const string FilmsFilePath = "films.json";
         private const string SeriesFilePath = "series.json";
         private const string StaffMembersFilePath = "staffMembers.json";
@@ -40,12 +45,6 @@ namespace Catalogue.Models
             seriesList.Add(series);
             SaveEntities(seriesList, SeriesFilePath);
         }
-
-        //public static Show LoadShow(int showId)
-        //{
-        //    return LoadEntity<Show>(ShowsFilePath, showId);
-        //}
-
         public static void SaveStaffMember(Person person)
         {
             List<Person> staffMembers = LoadEntities<Person>(StaffMembersFilePath);
@@ -53,10 +52,36 @@ namespace Catalogue.Models
             staffMembers.Add(person);
             SaveEntities(staffMembers, StaffMembersFilePath);
         }
-
+        public static Film LoadFilm(int filmId)
+        {
+            return LoadEntity<Film>(FilmsFilePath, filmId);
+        }
+        public static Series LoadSeries(int seriesId)
+        {
+            return LoadEntity<Series>(SeriesFilePath, seriesId);
+        }
         public static Person LoadStaffMember(int personId)
         {
             return LoadEntity<Person>(StaffMembersFilePath, personId);
+        }
+        public static void UpdateFilm(Film updatedFilm)
+        {
+            UpdateEntity(updatedFilm, FilmsFilePath);
+        }
+
+        public static void UpdateSeries(Series updatedSeries)
+        {
+            UpdateEntity(updatedSeries, SeriesFilePath);
+        }
+
+        public static void UpdateStaffMember(Person updatedPerson)
+        {
+            UpdateEntity(updatedPerson, StaffMembersFilePath);
+        }
+
+        public static void UpdateActor(Actor updatedActor)
+        {
+            UpdateEntity(updatedActor, ActorsFilePath);
         }
 
         public static void SaveActor(Actor actor)
@@ -74,7 +99,7 @@ namespace Catalogue.Models
 
         private static void SaveEntities<T>(List<T> entities, string filePath)
         {
-            string json = JsonConvert.SerializeObject(entities, Formatting.Indented);
+            string json = JsonSerializer.Serialize(entities);
             File.WriteAllText(filePath, json);
         }
 
@@ -83,7 +108,7 @@ namespace Catalogue.Models
             if (File.Exists(filePath))
             {
                 string json = File.ReadAllText(filePath);
-                return JsonConvert.DeserializeObject<List<T>>(json);
+                return JsonSerializer.Deserialize<List<T>>(json);
             }
 
             return new List<T>();
@@ -94,7 +119,21 @@ namespace Catalogue.Models
             List<T> entities = LoadEntities<T>(filePath);
             return entities.Find(e => (int)e.GetType().GetProperty("Id").GetValue(e) == entityId);
         }
+        private static void UpdateEntity<T>(T updatedEntity, string filePath)
+        {
+            List<T> entities = LoadEntities<T>(filePath);
+            int index = entities.FindIndex(e => (int)e.GetType().GetProperty("Id").GetValue(e) == (int)updatedEntity.GetType().GetProperty("Id").GetValue(updatedEntity));
 
+            if (index != -1)
+            {
+                entities[index] = updatedEntity;
+                SaveEntities(entities, filePath);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Entity with ID {updatedEntity.GetType().GetProperty("Id").GetValue(updatedEntity)} not found.");
+            }
+        }
         private static int GetNextId<T>(List<T> entities)
         {
             int nextId = entities.Count > 0 ?

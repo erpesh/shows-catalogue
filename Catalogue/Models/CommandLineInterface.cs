@@ -8,6 +8,7 @@ namespace Catalogue.Models
 {
     class CommandLineInterface
     {
+        private readonly string appName = "Catalogue";
         private readonly string[] commands = { 
             "help", 
             "register",
@@ -23,7 +24,7 @@ namespace Catalogue.Models
         {
             if (args.Length == 0)
             {
-                Console.WriteLine("Type 'Catalogue help' to see available commands.");
+                Console.WriteLine($"Type '{appName} help' to see available commands.");
                 return;
             }
 
@@ -58,6 +59,42 @@ namespace Catalogue.Models
                     foreach (var member in members)
                     {
                         Console.WriteLine($"{member.Id} - {member.FirstName} {member.LastName}");
+                    }
+                    break;
+                case "review":
+                    if (args.Length < 2)
+                    {
+                        Console.WriteLine("Please specify a subcommand. Available subcommands: add, delete");
+                        return;
+                    }   
+
+                    string subcommand = args[1].ToLower();
+                    string type = args[2].ToLower();
+                    string id = args[3];
+                    switch (subcommand)
+                    {
+                        case "add":
+                            if (type == "film")
+                            {
+                                var show = DataStorage.LoadFilm(int.Parse(id));
+                                var review = InputReview();
+                                show.AddReview(review);
+                                DataStorage.UpdateFilm(show);
+                            }
+                            else if (type == "series")
+                            {
+                                var show = DataStorage.LoadSeries(int.Parse(id));
+                                var review = InputReview();
+                                show.AddReview(review);
+                                DataStorage.UpdateSeries(show);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Invalid type. Available types: film, series");
+                            }
+                            break;
+                        case "delete":
+                            break;
                     }
                     break;
                 case "":
@@ -161,6 +198,24 @@ namespace Catalogue.Models
             DateOnly? endDate = DateOnly.TryParse(Console.ReadLine(), out DateOnly eDate) ? eDate : (DateOnly?)null;
 
             return new Series(title, description, genres, studio, director, actors, episodeLength, seasons, episodesPerSeason, startDate, endDate);
+        }
+        private Review InputReview()
+        {
+            Console.WriteLine("Enter review details:");
+
+            Console.Write("Username: ");
+            string username = Console.ReadLine();
+
+            Console.Write("Rating (1-10): ");
+            if (!int.TryParse(Console.ReadLine(), out int rating) || rating < 1 || rating > 10)
+            {
+                throw new FormatException("Invalid rating. Please enter a valid integer between 1 and 5.");
+            }
+
+            Console.Write("Comment (optional): ");
+            string? comment = Console.ReadLine();
+
+            return new Review(username, rating, comment);
         }
     }
 }

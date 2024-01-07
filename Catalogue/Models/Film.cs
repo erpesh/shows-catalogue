@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Catalogue.Models
@@ -28,6 +29,28 @@ namespace Catalogue.Models
             : base(_title, _description, _genres, _studio, _director, _actors, _episodeLength)
         {
             ReleaseDate = _releaseDate;
+        }
+
+        [JsonConstructor]
+        public Film(
+            int id,
+            string title,
+            string? description,
+            List<string> genres,
+            string studio,
+            string director,
+            List<string> actors,
+            int? episodeLength,
+            DateOnly? releaseDate,
+            List<Review> reviews,
+            double? avgRating
+        )
+            : base(title, description, genres, studio, director, actors, episodeLength)
+        {
+            Id = id;
+            ReleaseDate = releaseDate;
+            Reviews = reviews ?? new List<Review>();
+            AvgRating = avgRating;
         }
 
         protected override void CopyProperties(Show source)
