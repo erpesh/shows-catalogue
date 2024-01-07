@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Catalogue.Models
 {
-    class Series : Show
+    public class Series : Show
     {
         private int? seasons;
         private int? episodes;
@@ -36,16 +36,16 @@ namespace Catalogue.Models
 
         public Series(
             string _title,
-            string _description,
+            string? _description,
             List<string> _genres,
             string _studio,
-            Person _director,
-            List<Actor> _actors,
-            int _episodeLength,
-            int _seasons, 
-            int _episodes, 
-            DateOnly _startDate, 
-            DateOnly _endDate
+            string _director,
+            List<string> _actors,
+            int? _episodeLength,
+            int? _seasons, 
+            int? _episodes, 
+            DateOnly? _startDate, 
+            DateOnly? _endDate
         )
             : base(_title, _description, _genres, _studio, _director, _actors, _episodeLength)
         {

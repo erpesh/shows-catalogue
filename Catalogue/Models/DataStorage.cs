@@ -9,30 +9,42 @@ namespace Catalogue.Models
 {
     public static class DataStorage
     {
-        private const string ShowsFilePath = "shows.json";
+        private const string FilmsFilePath = "films.json";
+        private const string SeriesFilePath = "series.json";
         private const string StaffMembersFilePath = "staffMembers.json";
         private const string ActorsFilePath = "actors.json";
 
-        public static List<Show> LoadShows()
+        public static List<Film> LoadFilms()
         {
-            return LoadEntities<Show>(ShowsFilePath);
+            return LoadEntities<Film>(FilmsFilePath);
+        }
+        public static List<Series> LoadSeries()
+        {
+            return LoadEntities<Series>(SeriesFilePath);
         }
         public static List<Person> LoadStaff()
         {
             return LoadEntities<Person>(StaffMembersFilePath);
         }
-        public static void SaveShow(Show show)
+        public static void SaveFilm(Film film)
         {
-            List<Show> shows = LoadShows();
-            show.Id = GetNextId(shows);
-            shows.Add(show);
-            SaveEntities(shows, ShowsFilePath);
+            List<Film> films = LoadFilms();
+            film.Id = GetNextId(films);
+            films.Add(film);
+            SaveEntities(films, FilmsFilePath);
+        }
+        public static void SaveSeries(Series series)
+        {
+            List<Series> seriesList = LoadSeries();
+            series.Id = GetNextId(seriesList);
+            seriesList.Add(series);
+            SaveEntities(seriesList, SeriesFilePath);
         }
 
-        public static Show LoadShow(int showId)
-        {
-            return LoadEntity<Show>(ShowsFilePath, showId);
-        }
+        //public static Show LoadShow(int showId)
+        //{
+        //    return LoadEntity<Show>(ShowsFilePath, showId);
+        //}
 
         public static void SaveStaffMember(Person person)
         {
@@ -77,19 +89,19 @@ namespace Catalogue.Models
             return new List<T>();
         }
 
-        private static int GetNextId<T>(List<T> entities)
-        {
-            int nextId = entities.Count > 0 ? 
-                entities
-                .AsParallel()
-                .Max(e => (int)e.GetType().GetProperty("Id").GetValue(e)) + 1 : 1;
-            return nextId;
-        }
-
         private static T LoadEntity<T>(string filePath, int entityId)
         {
             List<T> entities = LoadEntities<T>(filePath);
             return entities.Find(e => (int)e.GetType().GetProperty("Id").GetValue(e) == entityId);
+        }
+
+        private static int GetNextId<T>(List<T> entities)
+        {
+            int nextId = entities.Count > 0 ?
+                entities
+                .AsParallel()
+                .Max(e => (int)e.GetType().GetProperty("Id").GetValue(e)) + 1 : 1;
+            return nextId;
         }
     }
 }

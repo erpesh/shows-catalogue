@@ -40,9 +40,12 @@ namespace Catalogue.Models
                 case "logout":
                     break;
                 case "addfilm":
-                    //InputFilm();
+                    var film = InputFilm();
+                    DataStorage.SaveFilm(film);
                     break;
                 case "addseries":
+                    var series = InputSeries();
+                    DataStorage.SaveSeries(series);
                     break;
                 case "addactor":
                     break;
@@ -54,7 +57,7 @@ namespace Catalogue.Models
                     var members = DataStorage.LoadStaff();
                     foreach (var member in members)
                     {
-                        Console.WriteLine($"{member.FirstName} {member.LastName}");
+                        Console.WriteLine($"{member.Id} - {member.FirstName} {member.LastName}");
                     }
                     break;
                 case "":
@@ -89,49 +92,75 @@ namespace Catalogue.Models
             }
         }
 
-        //private Film InputFilm()
-        //{
-        //    while (true)
-        //    {
-        //        Console.WriteLine("Enter film details:");
+        private Film InputFilm()
+        {
+            Console.WriteLine("Enter film details:");
 
-        //        Console.Write("Title: ");
-        //        string title = Console.ReadLine();
+            Console.Write("Title: ");
+            string title = Console.ReadLine();
 
-        //        Console.Write("Description: ");
-        //        string description = Console.ReadLine();
+            Console.Write("Description (optional): ");
+            string description = Console.ReadLine();
 
-        //        Console.Write("Genre: ");
-        //        string genre = Console.ReadLine();
+            Console.Write("Genres (comma-separated): ");
+            List<string> genres = Console.ReadLine().Split(',').Select(g => g.Trim()).ToList();
 
-        //        Console.Write("Studio: ");
-        //        string studio = Console.ReadLine();
+            Console.Write("Studio: ");
+            string studio = Console.ReadLine();
 
-        //        // Input director details using the InputPerson function
-        //        Person director = InputPerson();
+            Console.Write("Director: ");
+            string director = Console.ReadLine();
 
-        //        // Input actors details using the InputPerson function for each actor
-        //        List<Actor> actors = new List<Actor>();
-        //        Console.Write("Enter the number of actors: ");
-        //        int numberOfActors = int.Parse(Console.ReadLine());
+            Console.Write("Actors (comma-separated): ");
+            List<string> actors = Console.ReadLine().Split(',').Select(a => a.Trim()).ToList();
 
-        //        for (int i = 0; i < numberOfActors; i++)
-        //        {
-        //            Console.WriteLine($"Enter details for Actor {i + 1}:");
-        //            actors.Add(InputPerson());
-        //        }
+            Console.Write("Episode Length (in minutes, optional): ");
+            int? episodeLength = int.TryParse(Console.ReadLine(), out int length) ? length : (int?)null;
 
-        //        Console.Write("Episode Length (in minutes, if applicable): ");
-        //        int? episodeLength = int.TryParse(Console.ReadLine(), out int length) ? length : (int?)null;
+            Console.Write("Release Date (YYYY-MM-DD, optional): ");
+            DateOnly? releaseDate = DateOnly.TryParse(Console.ReadLine(), out DateOnly rDate) ? rDate : (DateOnly?)null;
 
-        //        Console.Write("Release Date (YYYY-MM-DD): ");
-        //        DateOnly? releaseDate = DateOnly.TryParse(Console.ReadLine(), out DateOnly date) ? date : (DateOnly?)null;
+            return new Film(title, description, genres, studio, director, actors, episodeLength, releaseDate);
+        }
 
-        //        // Creating and returning a new Film object
-        //        Film newFilm = new Film(title, description, new List<string> { genre }, studio, director, actors, episodeLength, releaseDate);
+        private Series InputSeries()
+        {
+            Console.WriteLine("Enter series details:");
 
-        //        return newFilm;
-        //    }
-        //}
+            Console.Write("Title: ");
+            string title = Console.ReadLine();
+
+            Console.Write("Description (optional): ");
+            string description = Console.ReadLine();
+
+            Console.Write("Genres (comma-separated): ");
+            List<string> genres = Console.ReadLine().Split(',').Select(g => g.Trim()).ToList();
+
+            Console.Write("Studio: ");
+            string studio = Console.ReadLine();
+
+            Console.Write("Director: ");
+            string director = Console.ReadLine();
+
+            Console.Write("Actors (comma-separated): ");
+            List<string> actors = Console.ReadLine().Split(',').Select(a => a.Trim()).ToList();
+
+            Console.Write("Episode Length (in minutes, optional): ");
+            int? episodeLength = int.TryParse(Console.ReadLine(), out int length) ? length : (int?)null;
+
+            Console.Write("Seasons (optional): ");
+            int? seasons = int.TryParse(Console.ReadLine(), out int s) ? s : (int?)null;
+
+            Console.Write("Episodes per Season (optional): ");
+            int? episodesPerSeason = int.TryParse(Console.ReadLine(), out int eps) ? eps : (int?)null;
+
+            Console.Write("Start Date (YYYY-MM-DD, optional): ");
+            DateOnly? startDate = DateOnly.TryParse(Console.ReadLine(), out DateOnly sDate) ? sDate : (DateOnly?)null;
+
+            Console.Write("End Date (YYYY-MM-DD, optional): ");
+            DateOnly? endDate = DateOnly.TryParse(Console.ReadLine(), out DateOnly eDate) ? eDate : (DateOnly?)null;
+
+            return new Series(title, description, genres, studio, director, actors, episodeLength, seasons, episodesPerSeason, startDate, endDate);
+        }
     }
 }

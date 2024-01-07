@@ -14,10 +14,10 @@ namespace Catalogue.Models
         protected string? description;
         protected List<string> genres;
         protected string studio;
-        protected Person director;
+        protected string director;
         protected List<ShowRating> ratings = new List<ShowRating> { };
         protected double? avgRating;
-        protected List<Actor> actors;
+        protected List<string> actors;
         protected int? episodeLength;
 
         public int Id
@@ -66,7 +66,7 @@ namespace Catalogue.Models
             get => studio;
             set => studio = value;
         }
-        public Person Director
+        public string Director
         {
             get => director;
             set => director = value;
@@ -81,7 +81,7 @@ namespace Catalogue.Models
             get => avgRating;
             set => avgRating = value;
         }
-        public List<Actor> Actors
+        public List<string> Actors
         {
             get => actors;
             set => actors = value;
@@ -99,19 +99,14 @@ namespace Catalogue.Models
             }
         }
 
-        //public Show(int _id)
-        //{
-        //    LoadFromFile();
-        //}
-
         public Show(
             string _title, 
-            string _description,
+            string? _description,
             List<string> _genres,
             string _studio,
-            Person _director,
-            List<Actor> _actors,
-            int _episodeLength
+            string _director,
+            List<string> _actors,
+            int? _episodeLength
         )
         {
             Title = _title;
