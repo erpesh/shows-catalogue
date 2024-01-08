@@ -52,16 +52,5 @@ namespace Catalogue.Models
             Reviews = reviews ?? new List<Review>();
             AvgRating = avgRating;
         }
-
-        protected override void CopyProperties(Show source)
-        {
-            base.CopyProperties(source);
-            if (source is Film filmSource)
-            {
-                ReleaseDate = filmSource.ReleaseDate;
-            }
-
-            //UpdateFile();
-        }
     }
 }

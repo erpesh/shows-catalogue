@@ -19,6 +19,7 @@ namespace Catalogue.Models
             "search",
             "review"
         };
+        private readonly string[] types = { "film", "series" };
 
         public void ExecuteCommand(string[] args)
         {
@@ -30,6 +31,7 @@ namespace Catalogue.Models
 
             string command = args[0].ToLower();
             string type;
+            int id;
             string username;
 
 
@@ -98,6 +100,11 @@ namespace Catalogue.Models
                     }
 
                     type = args[1].ToLower();
+                    if (!types.Contains(type))
+                    {
+                        Console.WriteLine("Invalid type. Available types: film, series");
+                        return;
+                    }
 
                     if (type == "film")
                     {
@@ -109,11 +116,60 @@ namespace Catalogue.Models
                         var show = InputSeries();
                         DataStorage.SaveSeries(show);
                     }
-                    else
+
+                    Console.WriteLine("Show added.");
+                    break;
+                case "edit":
+                    if (args.Length < 3)
                     {
-                        Console.WriteLine("Invalid subcommand. Available subcommands: film, series");
+                        Console.WriteLine("Please specify a type (film, series) and ID.");
                         return;
                     }
+
+                    type = args[1].ToLower();
+                    id = int.Parse(args[2]);
+
+                    if (!types.Contains(type))
+                    {
+                        Console.WriteLine("Invalid type. Available types: film, series");
+                        return;
+                    }
+
+                    if (type == "film")
+                    {
+                    }
+                    else if (type == "series")
+                    {
+                    }
+
+                    Console.WriteLine("Show edited.");
+                    break;
+                case "delete":
+                    if (args.Length < 3)
+                    {
+                        Console.WriteLine("Please specify a type (film, series) and ID.");
+                        return;
+                    }
+
+                    type = args[1].ToLower();
+                    id = int.Parse(args[2]);
+
+                    if (!types.Contains(type))
+                    {
+                        Console.WriteLine("Invalid type. Available types: film, series");
+                        return;
+                    }
+
+                    if (type == "film")
+                    {
+                        DataStorage.DeleteFilm(id);
+                    }
+                    else if (type == "series")
+                    {
+                        DataStorage.DeleteSeries(id);
+                    }
+
+                    Console.WriteLine("Show deleted.");
                     break;
                 case "review":
                     if (args.Length < 4)
@@ -123,11 +179,10 @@ namespace Catalogue.Models
                     }
 
                     string[] subcommands = { "add", "delete" };
-                    string[] types = { "film", "series" };
 
                     string subcommand = args[1].ToLower();
                     type = args[2].ToLower();
-                    int id = int.Parse(args[3]);
+                    id = int.Parse(args[3]);
 
                     if (!subcommands.Contains(subcommand))
                     {

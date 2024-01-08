@@ -80,6 +80,20 @@ namespace Catalogue.Models
         {
             UpdateEntity(updatedActor, ActorsFilePath);
         }
+        public static void DeleteFilm(int filmId)
+        {
+            DeleteEntity<Film>(filmId, FilmsFilePath);
+        }
+
+        public static void DeleteSeries(int seriesId)
+        {
+            DeleteEntity<Series>(seriesId, SeriesFilePath);
+        }
+
+        public static void DeleteActor(int actorId)
+        {
+            DeleteEntity<Actor>(actorId, ActorsFilePath);
+        }
 
         public static void SaveActor(Actor actor)
         {
@@ -129,6 +143,21 @@ namespace Catalogue.Models
             else
             {
                 throw new InvalidOperationException($"Entity with ID {updatedEntity.GetType().GetProperty("Id").GetValue(updatedEntity)} not found.");
+            }
+        }
+        public static void DeleteEntity<T>(int entityId, string filePath)
+        {
+            List<T> entities = LoadEntities<T>(filePath);
+            int index = entities.FindIndex(e => (int)e.GetType().GetProperty("Id").GetValue(e) == entityId);
+
+            if (index != -1)
+            {
+                entities.RemoveAt(index);
+                SaveEntities(entities, filePath);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Entity with ID {entityId} not found.");
             }
         }
         private static int GetNextId<T>(List<T> entities)
