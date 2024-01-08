@@ -24,10 +24,6 @@ namespace Catalogue.Models
         {
             return LoadEntities<Series>(SeriesFilePath);
         }
-        public static List<Person> LoadStaff()
-        {
-            return LoadEntities<Person>(StaffMembersFilePath);
-        }
         public static void SaveFilm(Film film)
         {
             List<Film> films = LoadFilms();
@@ -42,13 +38,6 @@ namespace Catalogue.Models
             seriesList.Add(series);
             SaveEntities(seriesList, SeriesFilePath);
         }
-        public static void SaveStaffMember(Person person)
-        {
-            List<Person> staffMembers = LoadEntities<Person>(StaffMembersFilePath);
-            person.Id = GetNextId(staffMembers);
-            staffMembers.Add(person);
-            SaveEntities(staffMembers, StaffMembersFilePath);
-        }
         public static Film LoadFilm(int filmId)
         {
             return LoadEntity<Film>(FilmsFilePath, filmId);
@@ -56,10 +45,6 @@ namespace Catalogue.Models
         public static Series LoadSeries(int seriesId)
         {
             return LoadEntity<Series>(SeriesFilePath, seriesId);
-        }
-        public static Person LoadStaffMember(int personId)
-        {
-            return LoadEntity<Person>(StaffMembersFilePath, personId);
         }
         public static void UpdateFilm(Film updatedFilm)
         {
@@ -69,11 +54,6 @@ namespace Catalogue.Models
         public static void UpdateSeries(Series updatedSeries)
         {
             UpdateEntity(updatedSeries, SeriesFilePath);
-        }
-
-        public static void UpdateStaffMember(Person updatedPerson)
-        {
-            UpdateEntity(updatedPerson, StaffMembersFilePath);
         }
 
         public static void UpdateActor(Actor updatedActor)
