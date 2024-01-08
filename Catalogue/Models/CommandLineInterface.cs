@@ -11,13 +11,13 @@ namespace Catalogue.Models
         private const string appName = "Catalogue";
         private readonly string[] commands = { 
             "help", 
-            "register",
             "login",
             "logout",
             "addfilm",
             "addseries",
             "addactor",
             "search",
+            "review"
         };
 
         public void ExecuteCommand(string[] args)
@@ -29,36 +29,90 @@ namespace Catalogue.Models
             }
 
             string command = args[0].ToLower();
-            
+            string type;
+            string username;
+
+
             switch (command)
             {
                 case "help":
-                    break;
-                case "register":
+                    Console.WriteLine("Available commands:");
+                    foreach (var cmd in commands)
+                    {
+                        switch (cmd)
+                        {
+                            case "help":
+                                Console.WriteLine($"{appName} {cmd} - Display available commands and their usage.");
+                                break;
+                            case "login":
+                                Console.WriteLine($"{appName} {cmd} - Log in to the application.");
+                                break;
+                            case "logout":
+                                Console.WriteLine($"{appName} {cmd} - Log out from the application.");
+                                break;
+                            case "addfilm":
+                                Console.WriteLine($"{appName} {cmd} - Add a new film to the catalogue.");
+                                break;
+                            case "addseries":
+                                Console.WriteLine($"{appName} {cmd} - Add a new series to the catalogue.");
+                                break;
+                            case "addactor":
+                                Console.WriteLine($"{appName} {cmd} - Add a new actor to the catalogue.");
+                                break;
+                            case "addperson":
+                                Console.WriteLine($"{appName} {cmd} - Add a new person to the catalogue.");
+                                break;
+                            case "search":
+                                Console.WriteLine($"{appName} {cmd} - Search and display staff members.");
+                                break;
+                            case "review":
+                                Console.WriteLine($"{appName} {cmd} - Manage reviews for films and series.");
+                                Console.WriteLine($"  {appName} {cmd} add <type> <id> - Add a review for a show (film or series) with the specified ID.");
+                                Console.WriteLine($"  {appName} {cmd} delete <type> <id> - Delete a review for a show (film or series) with the specified ID.");
+                                break;
+                            default:
+                                Console.WriteLine($"Invalid command: {cmd}");
+                                break;
+                        }
+                    }
                     break;
                 case "login":
+                    username = args.Length > 1 ? args[1].Trim() : null;
+                    if (string.IsNullOrWhiteSpace(username))
+                    {
+                        Console.Write("Specify your username.");
+                        return;
+                    }
+                    DataStorage.SaveUsername(username);
+                    Console.WriteLine($"Logged in as {username}.");
                     break;
                 case "logout":
+                    DataStorage.RemoveUsername();
+                    Console.WriteLine("Logged out.");
                     break;
-                case "addfilm":
-                    var film = InputFilm();
-                    DataStorage.SaveFilm(film);
-                    break;
-                case "addseries":
-                    var series = InputSeries();
-                    DataStorage.SaveSeries(series);
-                    break;
-                case "addactor":
-                    break;
-                case "addperson":
-                    var person = InputPerson();
-                    DataStorage.SaveStaffMember(person);
-                    break;
-                case "search":
-                    var members = DataStorage.LoadStaff();
-                    foreach (var member in members)
+                case "add":
+                    if (args.Length < 2)
                     {
-                        Console.WriteLine($"{member.Id} - {member.FirstName} {member.LastName}");
+                        Console.WriteLine("Please specify a type (film, series).");
+                        return;
+                    }
+
+                    type = args[1].ToLower();
+
+                    if (type == "film")
+                    {
+                        var show = InputFilm();
+                        DataStorage.SaveFilm(show);
+                    }
+                    else if (type == "series")
+                    {
+                        var show = InputSeries();
+                        DataStorage.SaveSeries(show);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid subcommand. Available subcommands: film, series");
+                        return;
                     }
                     break;
                 case "review":
@@ -72,7 +126,7 @@ namespace Catalogue.Models
                     string[] types = { "film", "series" };
 
                     string subcommand = args[1].ToLower();
-                    string type = args[2].ToLower();
+                    type = args[2].ToLower();
                     int id = int.Parse(args[3]);
 
                     if (!subcommands.Contains(subcommand))
@@ -85,21 +139,27 @@ namespace Catalogue.Models
                         Console.WriteLine("Invalid type. Available types: film, series");
                         return;
                     }
-                    
+
+                    username = DataStorage.LoadUsername();
+                    if (string.IsNullOrWhiteSpace(username))
+                    {
+                        Console.WriteLine("Please log in first.");
+                        return;
+                    }
 
                     if (subcommand == "add")
                     {
                         if (type == "film")
                         {
                             var show = DataStorage.LoadFilm(id);
-                            var review = InputReview();
+                            var review = InputReview(username);
                             show.AddReview(review);
                             DataStorage.UpdateFilm(show);
                         }
                         else if (type == "series")
                         {
                             var show = DataStorage.LoadSeries(id);
-                            var review = InputReview();
+                            var review = InputReview(username);
                             show.AddReview(review);
                             DataStorage.UpdateSeries(show);
                         }
@@ -110,19 +170,24 @@ namespace Catalogue.Models
                         if (type == "film")
                         {
                             var show = DataStorage.LoadFilm(id);
-                            show.DeleteReview("erp");
+                            show.DeleteReview(username);
                             DataStorage.UpdateFilm(show);
                         }
                         else if (type == "series")
                         {
                             var show = DataStorage.LoadSeries(id);
-                            show.DeleteReview("erp");
+                            show.DeleteReview(username);
                             DataStorage.UpdateSeries(show);
                         }
                         Console.WriteLine("Review deleted.");
                     }
                     break;
-                case "":
+                case "search":
+                    var members = DataStorage.LoadStaff();
+                    foreach (var member in members)
+                    {
+                        Console.WriteLine($"{member.Id} - {member.FirstName} {member.LastName}");
+                    }
                     break;
                 default:
                     Console.WriteLine("Invalid command. Available commands: addfilm, addseries, addactor, listfilms, listseries, listactors");
@@ -224,12 +289,9 @@ namespace Catalogue.Models
 
             return new Series(title, description, genres, studio, director, actors, episodeLength, seasons, episodesPerSeason, startDate, endDate);
         }
-        private Review InputReview()
+        private Review InputReview(string username)
         {
             Console.WriteLine("Enter review details:");
-
-            Console.Write("Username: ");
-            string username = Console.ReadLine();
 
             Console.Write("Rating (1-10): ");
             if (!int.TryParse(Console.ReadLine(), out int rating) || rating < 1 || rating > 10)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -9,11 +10,7 @@ namespace Catalogue.Models
 {
     public static class DataStorage
     {
-        private static readonly JsonSerializerOptions options = new JsonSerializerOptions
-        {
-            IncludeFields = true
-        };
-
+        private const string UsernameFilePath = "username.dat";
         private const string FilmsFilePath = "films.json";
         private const string SeriesFilePath = "series.json";
         private const string StaffMembersFilePath = "staffMembers.json";
@@ -141,6 +138,30 @@ namespace Catalogue.Models
                 .AsParallel()
                 .Max(e => (int)e.GetType().GetProperty("Id").GetValue(e)) + 1 : 1;
             return nextId;
+        }
+        public static void SaveUsername(string username)
+        {
+            string json = JsonSerializer.Serialize(username);
+            File.WriteAllText(UsernameFilePath, json);
+        }
+
+        public static string LoadUsername()
+        {
+            if (File.Exists(UsernameFilePath))
+            {
+                string json = File.ReadAllText(UsernameFilePath);
+                return JsonSerializer.Deserialize<string>(json);
+            }
+
+            return null;
+        }
+
+        public static void RemoveUsername()
+        {
+            if (File.Exists(UsernameFilePath))
+            {
+                File.Delete(UsernameFilePath);
+            }
         }
     }
 }
