@@ -12,13 +12,14 @@ namespace Catalogue.Models
         public string Username { get; set; }
         public int Rating { get; set; }
         public string? Comment { get; set; }
-        private DateTime Date = DateTime.Now;
+        public DateTime Date { get; set; }
 
         public Review(string username, int rating, string? comment)
         {
             Rating = rating;
             Username = username;
             Comment = comment;
+            Date = DateTime.Now;
         }
     }
 }

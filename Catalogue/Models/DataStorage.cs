@@ -38,43 +38,6 @@ namespace Catalogue.Models
             seriesList.Add(series);
             SaveEntities(seriesList, SeriesFilePath);
         }
-        public static Film LoadFilm(int filmId)
-        {
-            return LoadEntity<Film>(FilmsFilePath, filmId);
-        }
-        public static Series LoadSeries(int seriesId)
-        {
-            return LoadEntity<Series>(SeriesFilePath, seriesId);
-        }
-        public static void UpdateFilm(Film updatedFilm)
-        {
-            UpdateEntity(updatedFilm, FilmsFilePath);
-        }
-
-        public static void UpdateSeries(Series updatedSeries)
-        {
-            UpdateEntity(updatedSeries, SeriesFilePath);
-        }
-
-        public static void UpdateActor(Actor updatedActor)
-        {
-            UpdateEntity(updatedActor, ActorsFilePath);
-        }
-        public static void DeleteFilm(int filmId)
-        {
-            DeleteEntity<Film>(filmId, FilmsFilePath);
-        }
-
-        public static void DeleteSeries(int seriesId)
-        {
-            DeleteEntity<Series>(seriesId, SeriesFilePath);
-        }
-
-        public static void DeleteActor(int actorId)
-        {
-            DeleteEntity<Actor>(actorId, ActorsFilePath);
-        }
-
         public static void SaveActor(Actor actor)
         {
             List<Actor> actors = LoadEntities<Actor>(ActorsFilePath);
@@ -82,10 +45,45 @@ namespace Catalogue.Models
             actors.Add(actor);
             SaveEntities(actors, ActorsFilePath);
         }
-
+        public static Film LoadFilm(int filmId)
+        {
+            return LoadEntity<Film>(FilmsFilePath, filmId, "Film");
+        }
+        public static Series LoadSeries(int seriesId)
+        {
+            return LoadEntity<Series>(SeriesFilePath, seriesId, "Series");
+        }
         public static Actor LoadActor(int actorId)
         {
-            return LoadEntity<Actor>(ActorsFilePath, actorId);
+            return LoadEntity<Actor>(ActorsFilePath, actorId, "Actor");
+        }
+        public static void UpdateFilm(Film updatedFilm)
+        {
+            UpdateEntity(updatedFilm, FilmsFilePath, "Film");
+        }
+
+        public static void UpdateSeries(Series updatedSeries)
+        {
+            UpdateEntity(updatedSeries, SeriesFilePath, "Series");
+        }
+
+        public static void UpdateActor(Actor updatedActor)
+        {
+            UpdateEntity(updatedActor, ActorsFilePath, "Actor");
+        }
+        public static void DeleteFilm(int filmId)
+        {
+            DeleteEntity<Film>(filmId, FilmsFilePath, "Film");
+        }
+
+        public static void DeleteSeries(int seriesId)
+        {
+            DeleteEntity<Series>(seriesId, SeriesFilePath, "Series");
+        }
+
+        public static void DeleteActor(int actorId)
+        {
+            DeleteEntity<Actor>(actorId, ActorsFilePath, "Actor");
         }
 
         private static void SaveEntities<T>(List<T> entities, string filePath)
@@ -105,12 +103,17 @@ namespace Catalogue.Models
             return new List<T>();
         }
 
-        private static T LoadEntity<T>(string filePath, int entityId)
+        private static T LoadEntity<T>(string filePath, int entityId, string type)
         {
             List<T> entities = LoadEntities<T>(filePath);
-            return entities.Find(e => (int)e.GetType().GetProperty("Id").GetValue(e) == entityId);
+            T entity = entities.Find(e => (int)e.GetType().GetProperty("Id").GetValue(e) == entityId);
+            if (entity == null)
+            {
+                throw new InvalidOperationException($"{type} with ID {entityId} not found.");
+            }
+            return entity;
         }
-        private static void UpdateEntity<T>(T updatedEntity, string filePath)
+        private static void UpdateEntity<T>(T updatedEntity, string filePath, string type)
         {
             List<T> entities = LoadEntities<T>(filePath);
             int index = entities.FindIndex(e => (int)e.GetType().GetProperty("Id").GetValue(e) == (int)updatedEntity.GetType().GetProperty("Id").GetValue(updatedEntity));
@@ -122,10 +125,10 @@ namespace Catalogue.Models
             }
             else
             {
-                throw new InvalidOperationException($"Entity with ID {updatedEntity.GetType().GetProperty("Id").GetValue(updatedEntity)} not found.");
+                throw new InvalidOperationException($"{type} with ID {updatedEntity.GetType().GetProperty("Id").GetValue(updatedEntity)} not found.");
             }
         }
-        public static void DeleteEntity<T>(int entityId, string filePath)
+        public static void DeleteEntity<T>(int entityId, string filePath, string type)
         {
             List<T> entities = LoadEntities<T>(filePath);
             int index = entities.FindIndex(e => (int)e.GetType().GetProperty("Id").GetValue(e) == entityId);
@@ -137,7 +140,7 @@ namespace Catalogue.Models
             }
             else
             {
-                throw new InvalidOperationException($"Entity with ID {entityId} not found.");
+                throw new InvalidOperationException($"{type} with ID {entityId} not found.");
             }
         }
         private static int GetNextId<T>(List<T> entities)
