@@ -256,6 +256,7 @@ namespace Catalogue.Models
                             {
                                 var show = DataStorage.LoadFilm(id);
                                 var review = InputReview(username);
+                                show.DeleteReview(username); // Delete review if it already exists
                                 show.AddReview(review);
                                 DataStorage.UpdateFilm(show);
                             }
@@ -263,6 +264,7 @@ namespace Catalogue.Models
                             {
                                 var show = DataStorage.LoadSeries(id);
                                 var review = InputReview(username);
+                                show.DeleteReview(username); // Delete review if it already exists
                                 show.AddReview(review);
                                 DataStorage.UpdateSeries(show);
                             }
@@ -286,12 +288,7 @@ namespace Catalogue.Models
                         }
                         break;
                     case "list":
-                    //case "list":
-                    //    Console.WriteLine($"{appName} {cmd} - Manage your personal list of shows.");
-                    //    Console.WriteLine($"  {appName} {cmd} add <type> <id> <status> - Add a show with the specified ID to your list.");
-                    //    Console.WriteLine($"  {appName} {cmd} delete <type> <id> <status> - Delete a show with the specified ID from your list.");
-                    //    break;
-                        if (args.Length < 5)
+                        if (args.Length < 4)
                         {
                             throw new InvalidCommandException($"Please specify a subcommand (add, delete), type ({typesString}), ID, and status.");
                         }
@@ -299,7 +296,6 @@ namespace Catalogue.Models
                         subcommand = args[1].ToLower();
                         type = args[2].ToLower();
                         id = int.Parse(args[3]);
-                        string status = args[4].ToLower();
 
                         if (!subcommands.Contains(subcommand))
                         {
@@ -308,10 +304,6 @@ namespace Catalogue.Models
                         if (!types.Contains(type))
                         {
                             throw new MediaTypeException(reviewTypes);
-                        }
-                        if (!statuses.Contains(status))
-                        {
-                            throw new InvalidCommandException($"Invalid status. Available statuses: ({string.Join(", ", statuses)})");
                         }
 
                         username = DataStorage.LoadUsername();
@@ -322,6 +314,21 @@ namespace Catalogue.Models
 
                         if (subcommand == "add")
                         {
+                            string status = args[4].ToLower();
+                            if (!statuses.Contains(status))
+                            {
+                                throw new InvalidCommandException($"Invalid status. Available statuses: ({string.Join(", ", statuses)})");
+                            }
+
+                            // If the list item already exists, update the status
+                            var existingItem = DataStorage.LoadListItem(username, type, id);
+                            if (existingItem != null)
+                            {
+                                existingItem.Status = status;
+                                Console.WriteLine("List item updated.");
+                                return;
+                            }
+
                             if (type == "film")
                             {
                                 var show = DataStorage.LoadFilm(id);
@@ -334,23 +341,12 @@ namespace Catalogue.Models
                                 var listItem = new ListItem(username, "series", show.Id, show.Title, status);
                                 DataStorage.SaveListItem(listItem);
                             }
-                            Console.WriteLine("Review added.");
+                            Console.WriteLine("List item added.");
                         }
                         else if (subcommand == "delete")
                         {
-                            if (type == "film")
-                            {
-                                var show = DataStorage.LoadFilm(id);
-                                show.DeleteReview(username);
-                                DataStorage.UpdateFilm(show);
-                            }
-                            else if (type == "series")
-                            {
-                                var show = DataStorage.LoadSeries(id);
-                                show.DeleteReview(username);
-                                DataStorage.UpdateSeries(show);
-                            }
-                            Console.WriteLine("Review deleted.");
+                            DataStorage.DeleteListItem(username, type, id);
+                            Console.WriteLine("List item deleted.");
                         }
                         break;
                     case "search":

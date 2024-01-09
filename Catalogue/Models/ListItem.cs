@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Catalogue.Models
 {
     public class ListItem
     {
-        private int id;
         private string username;
         private string mediaType;
         private int mediaId;
@@ -16,11 +16,6 @@ namespace Catalogue.Models
         private string status;
         private DateTime dateAdded;
 
-        public int Id
-        {
-            get => id; 
-            set => id = value;
-        }
         public string Username
         {
             get => username;
@@ -59,6 +54,17 @@ namespace Catalogue.Models
             MediaTitle = _mediaTitle;
             Status = _status;
             DateAdded = DateTime.Now;
+        }
+
+        [JsonConstructor]
+        public ListItem(string username, string mediaType, int mediaId, string mediaTitle, string status, DateTime dateAdded)
+        {
+            Username = username;
+            MediaType = mediaType;
+            MediaId = mediaId;
+            MediaTitle = mediaTitle;
+            Status = status;
+            DateAdded = dateAdded;
         }
     }
 }

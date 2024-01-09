@@ -57,7 +57,6 @@ namespace Catalogue.Models
         public static void SaveListItem(ListItem listItem)
         {
             List<ListItem> userItems = LoadEntities<ListItem>(UserListFilePath) ?? new List<ListItem>();
-            listItem.Id = GetNextId(userItems);
             userItems.Add(listItem);
             SaveEntities(userItems, UserListFilePath);
         }
@@ -73,16 +72,20 @@ namespace Catalogue.Models
         {
             return LoadEntity<Actor>(ActorsFilePath, actorId);
         }
+        public static ListItem? LoadListItem(string username, string mediaType, int mediaId)
+        {
+            List<ListItem> userList = LoadUserList(username);
+            ListItem listItem = userList.Find(item => item.MediaId == mediaId && item.MediaType == mediaType);
+            return listItem;
+        }
         public static void UpdateFilm(Film updatedFilm)
         {
             UpdateEntity(updatedFilm, FilmsFilePath);
         }
-
         public static void UpdateSeries(Series updatedSeries)
         {
             UpdateEntity(updatedSeries, SeriesFilePath);
         }
-
         public static void UpdateActor(Actor updatedActor)
         {
             UpdateEntity(updatedActor, ActorsFilePath);
@@ -91,17 +94,29 @@ namespace Catalogue.Models
         {
             DeleteEntity<Film>(filmId, FilmsFilePath);
         }
-
         public static void DeleteSeries(int seriesId)
         {
             DeleteEntity<Series>(seriesId, SeriesFilePath);
         }
-
         public static void DeleteActor(int actorId)
         {
             DeleteEntity<Actor>(actorId, ActorsFilePath);
         }
+        public static void DeleteListItem(string username, string mediaType, int mediaId)
+        {
+            var listItems = LoadUserList(username);
+            int index = listItems.FindIndex(item => item.MediaId == mediaId && item.MediaType == mediaType);
 
+            if (index != -1)
+            {
+                listItems.RemoveAt(index);
+                SaveEntities(listItems, UserListFilePath);
+            }
+            else
+            {
+                throw new InvalidOperationException($"List item not found.");
+            }
+        }
         private static void SaveEntities<T>(List<T> entities, string filePath)
         {
             string json = JsonSerializer.Serialize(entities);
