@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Catalogue.Models
@@ -50,6 +51,24 @@ namespace Catalogue.Models
             DateOfBirth = _dateOfBirth;
             Nationality = _nationality;
             Filmography = filmography;
+        }
+
+        [JsonConstructor]
+        public Actor(int id, string fullName, DateOnly dateOfBirth, string nationality, List<string> filmography)
+        {
+            Id = id;
+            FullName = fullName;
+            DateOfBirth = dateOfBirth;
+            Nationality = nationality;
+            Filmography = filmography;
+        }
+
+        public void Output()
+        {
+            Console.WriteLine($"Full name: {FullName}");
+            Console.WriteLine($"Date of birth: {DateOfBirth}");
+            Console.WriteLine($"Nationality: {Nationality}");
+            Console.WriteLine($"Filmography: {string.Join(", ", Filmography)}");
         }
     }
 }

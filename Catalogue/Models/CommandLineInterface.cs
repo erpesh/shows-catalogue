@@ -62,6 +62,9 @@ namespace Catalogue.Models
                                 case "logout":
                                     Console.WriteLine($"{appName} {cmd} - Log out from the application.");
                                     break;
+                                case "view":
+                                    Console.WriteLine($"{appName} {cmd} <type> <id> - View details of a record ({typesString}) in the catalogue.");
+                                    break;
                                 case "add":
                                     Console.WriteLine($"{appName} {cmd} <type> - Add a new record ({typesString}) to the catalogue.");
                                     break;
@@ -133,6 +136,37 @@ namespace Catalogue.Models
                         DataStorage.RemoveUsername();
                         Console.WriteLine("Logged out.");
                         break;
+                    case "view":
+                        if (args.Length < 3)
+                        {
+                            throw new InvalidCommandException($"Please specify a type ({typesString}) and ID.");
+                        }
+
+                        type = args[1].ToLower();
+                        if (!types.Contains(type))
+                        {
+                            throw new MediaTypeException(types);
+                        }
+
+                        id = int.Parse(args[2]);
+
+                        if (type == "film")
+                        {
+                            var film = DataStorage.LoadFilm(id);
+                            film.Output();
+                        }
+                        else if (type == "series")
+                        {
+                            var series = DataStorage.LoadSeries(id);
+                            series.Output();
+                        }
+                        else if (type == "actor")
+                        {
+                            var actor = DataStorage.LoadActor(id);
+                            actor.Output();
+                        }
+
+                        break;
                     case "add":
                         if (args.Length < 2)
                         {
@@ -149,19 +183,20 @@ namespace Catalogue.Models
                         {
                             var show = InputFilm();
                             DataStorage.SaveFilm(show);
+                            Console.WriteLine("Film added.");
                         }
                         else if (type == "series")
                         {
                             var show = InputSeries();
                             DataStorage.SaveSeries(show);
+                            Console.WriteLine("Series added.");
                         }
                         else if (type == "actor")
                         {
                             var person = InputActor();
                             DataStorage.SaveActor(person);
+                            Console.WriteLine("Actor added.");
                         }
-
-                        Console.WriteLine("Show added.");
                         break;
                     case "edit":
                         if (args.Length < 3)
@@ -213,17 +248,18 @@ namespace Catalogue.Models
                         if (type == "film")
                         {
                             DataStorage.DeleteFilm(id);
+                            Console.WriteLine("Film deleted.");
                         }
                         else if (type == "series")
                         {
                             DataStorage.DeleteSeries(id);
+                            Console.WriteLine("Series deleted.");
                         }
                         else if (type == "actor")
                         {
                             DataStorage.DeleteActor(id);
+                            Console.WriteLine("Actor deleted.");
                         }
-
-                        Console.WriteLine("Show deleted.");
                         break;
                     case "review":
                         if (args.Length < 4)

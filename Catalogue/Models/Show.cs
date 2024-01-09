@@ -123,14 +123,26 @@ namespace Catalogue.Models
                 AvgRating = CalculateAvgRating();
             }
         }
-        protected double CalculateAvgRating()
+        protected double? CalculateAvgRating()
         {
-            if (Reviews.Count == 0) return 0;
+            if (Reviews.Count == 0) return null;
             
             double totalRating = Reviews.AsParallel().Sum(r => r.Rating);
             double avgRating = totalRating / Reviews.Count;
 
             return avgRating;
+        }
+        public virtual void Output()
+        {
+            Console.WriteLine($"ID: {Id}");
+            Console.WriteLine($"Title: {Title}");
+            Console.WriteLine($"Description: {Description}");
+            Console.WriteLine($"Genres: {string.Join(", ", Genres)}");
+            Console.WriteLine($"Studio: {Studio}");
+            Console.WriteLine($"Director: {Director}");
+            Console.WriteLine($"Actors: {string.Join(", ", Actors)}");
+            Console.WriteLine($"Episode length: {EpisodeLength} minutes");
+            Console.WriteLine($"Average rating: {AvgRating}");
         }
     }
 }

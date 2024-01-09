@@ -82,5 +82,14 @@ namespace Catalogue.Models
             Reviews = reviews ?? new List<Review>();
             AvgRating = avgRating;
         }
+        public override void Output()
+        {
+            base.Output();
+
+            Console.WriteLine($"Seasons: {Seasons}");
+            Console.WriteLine($"Episodes: {Episodes}");
+            Console.WriteLine($"Start date: {StartDate}");
+            Console.WriteLine($"End date: {EndDate}");
+        }
     }
 }
