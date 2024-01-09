@@ -58,6 +58,8 @@ namespace Catalogue.Models
             base.Output();
 
             Console.WriteLine($"Release date: {ReleaseDate}");
+
+            OutputReviews();
         }
     }
 }

@@ -10,22 +10,25 @@ namespace Catalogue.Models
     {
         private const string appName = "Catalogue";
         private readonly string[] commands = { 
-            "help", 
+            "help",
+            "stats",
             "login",
             "logout",
+            "view",
             "add",
             "edit",
             "delete",
             "review",
-            "search",
             "list",
+            "search",
         };
         private readonly string[] types = { "film", "series", "actor" };
         private readonly string[] statuses = { "completed", "watching", "planning" };
-        private string typesString
-        {
-            get => string.Join(", ", types);
-        }
+        private string[] subcommands = { "add", "delete" };
+
+        private string typesString => string.Join(", ", types);
+        private string statusesString => string.Join(", ", statuses);
+        private string subcommandsString => string.Join(", ", subcommands);
 
         public void ExecuteCommand(string[] args)
         {
@@ -43,7 +46,6 @@ namespace Catalogue.Models
                 string username;
 
                 string[] reviewTypes = { "film", "series" };
-                string[] subcommands = { "add", "delete" };
 
                 switch (command)
                 {
@@ -55,6 +57,10 @@ namespace Catalogue.Models
                             {
                                 case "help":
                                     Console.WriteLine($"{appName} {cmd} - Display available commands and their usage.");
+                                    break;
+                                // TODO: Implement stats command
+                                case "stats":
+                                    Console.WriteLine($"{appName} {cmd} - Display statistics about the catalogue.");
                                     break;
                                 case "login":
                                     Console.WriteLine($"{appName} {cmd} - Log in to the application.");
@@ -81,8 +87,8 @@ namespace Catalogue.Models
                                     break;
                                 case "list":
                                     Console.WriteLine($"{appName} {cmd} - Manage your personal list of shows.");
-                                    Console.WriteLine($"  {appName} {cmd} add <type> <id> <status> - Add a show with the specified ID to your list.");
-                                    Console.WriteLine($"  {appName} {cmd} delete <type> <id> <status> - Delete a show with the specified ID from your list.");
+                                    Console.WriteLine($"  {appName} {cmd} add <type> <id> <status> - Add a show to your list with the specified status ({statusesString}).");
+                                    Console.WriteLine($"  {appName} {cmd} delete <type> <id> - Delete a show with the specified ID from your list.");
                                     break;
                                 case "search":
                                     Console.WriteLine($"{appName} {cmd} <type> <type:value> - Search and display shows or actors.");
@@ -95,7 +101,7 @@ namespace Catalogue.Models
                                     Console.WriteLine(" - director");
                                     Console.WriteLine(" - actors (comma-separated)");
                                     Console.WriteLine(" - length (min-max in minutes)");
-                                    Console.WriteLine(" - release (min-max in YYYY-MM-DD format)");
+                                    Console.WriteLine(" - release (min-max in YYYY format)");
 
                                     Console.WriteLine(" Series search types:");
                                     Console.WriteLine(" - sort (rating, startdate, seasons, length)");
@@ -107,14 +113,14 @@ namespace Catalogue.Models
                                     Console.WriteLine(" - actors (comma-separated)");
                                     Console.WriteLine(" - length (min-max in minutes)");
                                     Console.WriteLine(" - seasons (min-max)");
-                                    Console.WriteLine(" - date (min-max in YYYY-MM-DD format)");
+                                    Console.WriteLine(" - date (min-max in YYYY format)");
 
                                     Console.WriteLine(" Actor search types:");
                                     Console.WriteLine(" - sort (dob)");
                                     Console.WriteLine(" - name");
                                     Console.WriteLine(" - nationality");
                                     Console.WriteLine(" - show");
-                                    Console.WriteLine(" - dob (min-max in YYYY-MM-DD format)");
+                                    Console.WriteLine(" - dob (min-max in YYYY format)");
                                     break;
                                 default:
                                     Console.WriteLine($"Invalid command: {cmd}");
@@ -273,7 +279,7 @@ namespace Catalogue.Models
 
                         if (!subcommands.Contains(subcommand))
                         {
-                            throw new InvalidCommandException("Invalid subcommand. Available subcommands: add, delete");
+                            throw new InvalidCommandException($"Invalid subcommand. Available subcommands: {subcommandsString}");
                         }
                         if (!types.Contains(type))
                         {
@@ -324,36 +330,99 @@ namespace Catalogue.Models
                         }
                         break;
                     case "list":
-                        if (args.Length < 4)
+                        // Use extended subcommands to allow for "list view" command
+                        string[] extendedSubcommands = { "add", "delete", "view" };
+                        string extSubString = string.Join(", ", extendedSubcommands);
+
+                        // Check if user is logged in
+                        username = DataStorage.LoadUsername();
+                        if (string.IsNullOrWhiteSpace(username))
                         {
-                            throw new InvalidCommandException($"Please specify a subcommand (add, delete), type ({typesString}), ID, and status.");
+                            throw new UnauthorizedAccessException("Please log in to use this command.");
                         }
 
+                        // Check if subcommand is specified
+                        if (args.Length == 1)
+                        {
+                            throw new InvalidCommandException($"Please specify a subcommand ({extSubString}).");
+                        }
                         subcommand = args[1].ToLower();
+
+                        // Check if subcommand is valid
+                        if (!extendedSubcommands.Contains(subcommand))
+                        {
+                            throw new InvalidCommandException($"Invalid subcommand. Available subcommands: {extSubString}");
+                        }
+
+                        // If subcommand is "view", display the user's list
+                        if (subcommand == "view")
+                        {
+                            var userList = DataStorage.LoadUserList(username);
+                            if (userList.Count == 0)
+                            {
+                                Console.WriteLine("Your list is empty.");
+                            }
+
+                            userList
+                                .OrderBy(item => item.Status == "completed")
+                                .ToList()
+                                .ForEach(item =>
+                            {
+                                ConsoleColor statusColor;
+
+                                switch (item.Status)
+                                {
+                                    case "completed":
+                                        statusColor = ConsoleColor.Cyan;
+                                        break;
+                                    case "watching":
+                                        statusColor = ConsoleColor.Blue;
+                                        break;
+                                    case "planning":
+                                        statusColor = ConsoleColor.Yellow;
+                                        break;
+                                    default:
+                                        statusColor = ConsoleColor.White;
+                                        break;
+                                }
+
+                                Console.ForegroundColor = statusColor;
+                                Console.WriteLine($"  Type: {item.MediaType}, ID: {item.MediaId}, Title: \"{item.MediaTitle}\", Status: {item.Status}");
+                                Console.ResetColor();
+                            });
+
+                            return;
+                        }
+
+                        // Check if type and ID are specified
+                        if (args.Length < 4)
+                        {
+                            throw new InvalidCommandException($"Please specify a type ({typesString}) and ID.");
+                        }
+
                         type = args[2].ToLower();
                         id = int.Parse(args[3]);
 
-                        if (!subcommands.Contains(subcommand))
-                        {
-                            throw new InvalidCommandException("Invalid subcommand. Available subcommands: add, delete");
-                        }
+                        // Check if type is valid
                         if (!types.Contains(type))
                         {
                             throw new MediaTypeException(reviewTypes);
                         }
 
-                        username = DataStorage.LoadUsername();
-                        if (string.IsNullOrWhiteSpace(username))
-                        {
-                            throw new UnauthorizedAccessException("Please log in to add a review.");
-                        }
-
                         if (subcommand == "add")
                         {
+                            // Check if status is specified
+                            if (args.Length < 5)
+                            {
+                                throw new InvalidCommandException($"Please specify a status ({statusesString}).");
+                            }
+
                             string status = args[4].ToLower();
+
+                            // Check if status is valid
                             if (!statuses.Contains(status))
                             {
-                                throw new InvalidCommandException($"Invalid status. Available statuses: ({string.Join(", ", statuses)})");
+                                throw new InvalidCommandException($"Invalid status. Available statuses: ({statusesString})");
                             }
 
                             // If the list item already exists, update the status
@@ -783,13 +852,21 @@ namespace Catalogue.Models
             return date.CompareTo(minDate) >= 0 && date.CompareTo(maxDate) <= 0;
         }
         private static (DateOnly, DateOnly) ParseDateRange(string dateRange)
-        {
-            var parts = dateRange.Split('-');
-            if (parts.Length == 2 && DateOnly.TryParse(parts[0], out DateOnly minDate) && DateOnly.TryParse(parts[1], out DateOnly maxDate))
-            {
-                return (minDate, maxDate);
-            }
-            return (default, default);
-        }
+{
+    var parts = dateRange.Split('-');
+    
+    if (parts.Length == 2 &&
+        int.TryParse(parts[0], out int startYear) &&
+        int.TryParse(parts[1], out int endYear) &&
+        startYear <= endYear)
+    {
+        DateOnly minDate = new DateOnly(startYear, 1, 1);
+        DateOnly maxDate = new DateOnly(endYear, 12, 31);
+
+        return (minDate, maxDate);
+    }
+
+    return (default, default);
+}
     }
 }

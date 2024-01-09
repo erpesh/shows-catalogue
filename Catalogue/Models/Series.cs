@@ -90,6 +90,8 @@ namespace Catalogue.Models
             Console.WriteLine($"Episodes: {Episodes}");
             Console.WriteLine($"Start date: {StartDate}");
             Console.WriteLine($"End date: {EndDate}");
+
+            OutputReviews();
         }
     }
 }

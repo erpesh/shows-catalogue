@@ -21,5 +21,15 @@ namespace Catalogue.Models
             Comment = comment;
             Date = DateTime.Now;
         }
+
+        public void Output()
+        {
+            Console.WriteLine($"  Username: {Username}");
+            Console.WriteLine($"  Rating: {Rating}");
+            if (Comment != null)
+                Console.WriteLine($"  Comment: {Comment}");
+            Console.WriteLine($"  Date: {Date.ToString("yyyy-mm-dd")}");
+            Console.WriteLine();
+        }
     }
 }

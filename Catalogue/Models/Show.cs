@@ -132,6 +132,20 @@ namespace Catalogue.Models
 
             return avgRating;
         }
+        protected void OutputReviews()
+        {
+            if (Reviews.Count == 0)
+            {
+                Console.WriteLine("No reviews yet.");
+                return;
+            }
+
+            Console.WriteLine("Reviews:");
+            foreach (Review review in Reviews)
+            {
+                review.Output();
+            }
+        }
         public virtual void Output()
         {
             Console.WriteLine($"ID: {Id}");
