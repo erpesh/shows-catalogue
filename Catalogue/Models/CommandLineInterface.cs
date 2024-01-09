@@ -6,25 +6,6 @@ using System.Threading.Tasks;
 
 namespace Catalogue.Models
 {
-    public class MediaTypeException : Exception
-    {
-        public MediaTypeException(string[] validTypes)
-            : base($"Please specify a valid type ({string.Join(", ", validTypes)}).")
-        {
-        }
-    }
-    public class InvalidCommandException : Exception
-    {
-        public InvalidCommandException(string message) : base(message)
-        {
-        }
-    }
-    public class UnauthorizedAccessException : Exception
-    {
-        public UnauthorizedAccessException(string message) : base(message)
-        {
-        }
-    }
     class CommandLineInterface
     {
         private const string appName = "Catalogue";
@@ -37,8 +18,10 @@ namespace Catalogue.Models
             "delete",
             "review",
             "search",
+            "list",
         };
         private readonly string[] types = { "film", "series", "actor" };
+        private readonly string[] statuses = { "completed", "watching", "planning" };
         private string typesString
         {
             get => string.Join(", ", types);
@@ -55,8 +38,12 @@ namespace Catalogue.Models
 
                 string command = args[0].ToLower();
                 string type;
+                string subcommand;
                 int id;
                 string username;
+
+                string[] reviewTypes = { "film", "series" };
+                string[] subcommands = { "add", "delete" };
 
                 switch (command)
                 {
@@ -91,8 +78,8 @@ namespace Catalogue.Models
                                     break;
                                 case "list":
                                     Console.WriteLine($"{appName} {cmd} - Manage your personal list of shows.");
-                                    Console.WriteLine($"  {appName} {cmd} add <type> <id> <status> - Add a review for a show (film or series) with the specified ID.");
-                                    Console.WriteLine($"  {appName} {cmd} delete <type> <id> <status> - Delete a review for a show (film or series) with the specified ID.");
+                                    Console.WriteLine($"  {appName} {cmd} add <type> <id> <status> - Add a show with the specified ID to your list.");
+                                    Console.WriteLine($"  {appName} {cmd} delete <type> <id> <status> - Delete a show with the specified ID from your list.");
                                     break;
                                 case "search":
                                     Console.WriteLine($"{appName} {cmd} <type> <type:value> - Search and display shows or actors.");
@@ -244,10 +231,7 @@ namespace Catalogue.Models
                             throw new InvalidCommandException($"Please specify a subcommand (add, delete), type ({typesString}), and ID.");
                         }
 
-                        string[] reviewTypes = { "film", "series" };
-                        string[] subcommands = { "add", "delete" };
-
-                        string subcommand = args[1].ToLower();
+                        subcommand = args[1].ToLower();
                         type = args[2].ToLower();
                         id = int.Parse(args[3]);
 
@@ -302,12 +286,77 @@ namespace Catalogue.Models
                         }
                         break;
                     case "list":
+                    //case "list":
+                    //    Console.WriteLine($"{appName} {cmd} - Manage your personal list of shows.");
+                    //    Console.WriteLine($"  {appName} {cmd} add <type> <id> <status> - Add a show with the specified ID to your list.");
+                    //    Console.WriteLine($"  {appName} {cmd} delete <type> <id> <status> - Delete a show with the specified ID from your list.");
+                    //    break;
+                        if (args.Length < 5)
+                        {
+                            throw new InvalidCommandException($"Please specify a subcommand (add, delete), type ({typesString}), ID, and status.");
+                        }
 
+                        subcommand = args[1].ToLower();
+                        type = args[2].ToLower();
+                        id = int.Parse(args[3]);
+                        string status = args[4].ToLower();
+
+                        if (!subcommands.Contains(subcommand))
+                        {
+                            throw new InvalidCommandException("Invalid subcommand. Available subcommands: add, delete");
+                        }
+                        if (!types.Contains(type))
+                        {
+                            throw new MediaTypeException(reviewTypes);
+                        }
+                        if (!statuses.Contains(status))
+                        {
+                            throw new InvalidCommandException($"Invalid status. Available statuses: ({string.Join(", ", statuses)})");
+                        }
+
+                        username = DataStorage.LoadUsername();
+                        if (string.IsNullOrWhiteSpace(username))
+                        {
+                            throw new UnauthorizedAccessException("Please log in to add a review.");
+                        }
+
+                        if (subcommand == "add")
+                        {
+                            if (type == "film")
+                            {
+                                var show = DataStorage.LoadFilm(id);
+                                var listItem = new ListItem(username, "film", show.Id, show.Title, status);
+                                DataStorage.SaveListItem(listItem);
+                            }
+                            else if (type == "series")
+                            {
+                                var show = DataStorage.LoadSeries(id);
+                                var listItem = new ListItem(username, "series", show.Id, show.Title, status);
+                                DataStorage.SaveListItem(listItem);
+                            }
+                            Console.WriteLine("Review added.");
+                        }
+                        else if (subcommand == "delete")
+                        {
+                            if (type == "film")
+                            {
+                                var show = DataStorage.LoadFilm(id);
+                                show.DeleteReview(username);
+                                DataStorage.UpdateFilm(show);
+                            }
+                            else if (type == "series")
+                            {
+                                var show = DataStorage.LoadSeries(id);
+                                show.DeleteReview(username);
+                                DataStorage.UpdateSeries(show);
+                            }
+                            Console.WriteLine("Review deleted.");
+                        }
                         break;
                     case "search":
-                        if (args.Length < 3)
+                        if (args.Length < 2)
                         {
-                            throw new InvalidCommandException($"Please specify a type ({typesString}) and at least one filter.");
+                            throw new InvalidCommandException($"Please specify a type ({typesString}).");
                         }
 
                         type = args[1].ToLower();
@@ -337,7 +386,7 @@ namespace Catalogue.Models
                                                     films = films.OrderBy(f => f.ReleaseDate).ToList();
                                                     break;
                                                 case "length":
-                                                    films = films.OrderBy(f => f.EpisodeLength).ToList();
+                                                    films = films.OrderByDescending(f => f.EpisodeLength).ToList();
                                                     break;
                                                 default:
                                                     Console.WriteLine($"Unknown sort criteria: {filter.Value}");

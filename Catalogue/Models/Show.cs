@@ -123,7 +123,6 @@ namespace Catalogue.Models
                 AvgRating = CalculateAvgRating();
             }
         }
-
         protected double CalculateAvgRating()
         {
             if (Reviews.Count == 0) return 0;
@@ -132,20 +131,6 @@ namespace Catalogue.Models
             double avgRating = totalRating / Reviews.Count;
 
             return avgRating;
-        }
-
-        protected virtual void CopyProperties(Show source)
-        {
-            Id = source.Id;
-            Title = source.Title;
-            Description = source.Description;
-            Genres = source.Genres;
-            Studio = source.Studio;
-            Director = source.Director;
-            Reviews = source.Reviews;
-            AvgRating = source.AvgRating;
-            Actors = source.Actors;
-            EpisodeLength = source.EpisodeLength;
         }
     }
 }

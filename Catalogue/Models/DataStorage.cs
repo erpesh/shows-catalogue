@@ -14,6 +14,7 @@ namespace Catalogue.Models
         private const string FilmsFilePath = "films.json";
         private const string SeriesFilePath = "series.json";
         private const string ActorsFilePath = "actors.json";
+        private const string UserListFilePath = "userlist.json";
 
         public static List<Film> LoadFilms()
         {
@@ -26,6 +27,11 @@ namespace Catalogue.Models
         public static List<Actor> LoadActors()
         {
             return LoadEntities<Actor>(ActorsFilePath);
+        }
+        public static List<ListItem> LoadUserList(string username)
+        {
+            List<ListItem> userItems = LoadEntities<ListItem>(UserListFilePath) ?? new List<ListItem>();
+            return userItems.Where(item => item.Username == username).ToList();
         }
         public static void SaveFilm(Film film)
         {
@@ -43,10 +49,17 @@ namespace Catalogue.Models
         }
         public static void SaveActor(Actor actor)
         {
-            List<Actor> actors = LoadEntities<Actor>(ActorsFilePath);
+            List<Actor> actors = LoadActors();
             actor.Id = GetNextId(actors);
             actors.Add(actor);
             SaveEntities(actors, ActorsFilePath);
+        }
+        public static void SaveListItem(ListItem listItem)
+        {
+            List<ListItem> userItems = LoadEntities<ListItem>(UserListFilePath) ?? new List<ListItem>();
+            listItem.Id = GetNextId(userItems);
+            userItems.Add(listItem);
+            SaveEntities(userItems, UserListFilePath);
         }
         public static Film LoadFilm(int filmId)
         {
