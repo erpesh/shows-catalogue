@@ -13,7 +13,6 @@ namespace Catalogue.Models
         private const string UsernameFilePath = "username.dat";
         private const string FilmsFilePath = "films.json";
         private const string SeriesFilePath = "series.json";
-        private const string StaffMembersFilePath = "staffMembers.json";
         private const string ActorsFilePath = "actors.json";
 
         public static List<Film> LoadFilms()
@@ -23,6 +22,10 @@ namespace Catalogue.Models
         public static List<Series> LoadSeries()
         {
             return LoadEntities<Series>(SeriesFilePath);
+        }
+        public static List<Actor> LoadActors()
+        {
+            return LoadEntities<Actor>(ActorsFilePath);
         }
         public static void SaveFilm(Film film)
         {
@@ -47,43 +50,43 @@ namespace Catalogue.Models
         }
         public static Film LoadFilm(int filmId)
         {
-            return LoadEntity<Film>(FilmsFilePath, filmId, "Film");
+            return LoadEntity<Film>(FilmsFilePath, filmId);
         }
         public static Series LoadSeries(int seriesId)
         {
-            return LoadEntity<Series>(SeriesFilePath, seriesId, "Series");
+            return LoadEntity<Series>(SeriesFilePath, seriesId);
         }
         public static Actor LoadActor(int actorId)
         {
-            return LoadEntity<Actor>(ActorsFilePath, actorId, "Actor");
+            return LoadEntity<Actor>(ActorsFilePath, actorId);
         }
         public static void UpdateFilm(Film updatedFilm)
         {
-            UpdateEntity(updatedFilm, FilmsFilePath, "Film");
+            UpdateEntity(updatedFilm, FilmsFilePath);
         }
 
         public static void UpdateSeries(Series updatedSeries)
         {
-            UpdateEntity(updatedSeries, SeriesFilePath, "Series");
+            UpdateEntity(updatedSeries, SeriesFilePath);
         }
 
         public static void UpdateActor(Actor updatedActor)
         {
-            UpdateEntity(updatedActor, ActorsFilePath, "Actor");
+            UpdateEntity(updatedActor, ActorsFilePath);
         }
         public static void DeleteFilm(int filmId)
         {
-            DeleteEntity<Film>(filmId, FilmsFilePath, "Film");
+            DeleteEntity<Film>(filmId, FilmsFilePath);
         }
 
         public static void DeleteSeries(int seriesId)
         {
-            DeleteEntity<Series>(seriesId, SeriesFilePath, "Series");
+            DeleteEntity<Series>(seriesId, SeriesFilePath);
         }
 
         public static void DeleteActor(int actorId)
         {
-            DeleteEntity<Actor>(actorId, ActorsFilePath, "Actor");
+            DeleteEntity<Actor>(actorId, ActorsFilePath);
         }
 
         private static void SaveEntities<T>(List<T> entities, string filePath)
@@ -103,17 +106,17 @@ namespace Catalogue.Models
             return new List<T>();
         }
 
-        private static T LoadEntity<T>(string filePath, int entityId, string type)
+        private static T LoadEntity<T>(string filePath, int entityId)
         {
             List<T> entities = LoadEntities<T>(filePath);
             T entity = entities.Find(e => (int)e.GetType().GetProperty("Id").GetValue(e) == entityId);
             if (entity == null)
             {
-                throw new InvalidOperationException($"{type} with ID {entityId} not found.");
+                throw new InvalidOperationException($"{typeof(T).Name} with ID {entityId} not found.");
             }
             return entity;
         }
-        private static void UpdateEntity<T>(T updatedEntity, string filePath, string type)
+        private static void UpdateEntity<T>(T updatedEntity, string filePath)
         {
             List<T> entities = LoadEntities<T>(filePath);
             int index = entities.FindIndex(e => (int)e.GetType().GetProperty("Id").GetValue(e) == (int)updatedEntity.GetType().GetProperty("Id").GetValue(updatedEntity));
@@ -125,10 +128,10 @@ namespace Catalogue.Models
             }
             else
             {
-                throw new InvalidOperationException($"{type} with ID {updatedEntity.GetType().GetProperty("Id").GetValue(updatedEntity)} not found.");
+                throw new InvalidOperationException($"{typeof(T).Name} with ID {updatedEntity.GetType().GetProperty("Id").GetValue(updatedEntity)} not found.");
             }
         }
-        public static void DeleteEntity<T>(int entityId, string filePath, string type)
+        public static void DeleteEntity<T>(int entityId, string filePath)
         {
             List<T> entities = LoadEntities<T>(filePath);
             int index = entities.FindIndex(e => (int)e.GetType().GetProperty("Id").GetValue(e) == entityId);
@@ -140,7 +143,7 @@ namespace Catalogue.Models
             }
             else
             {
-                throw new InvalidOperationException($"{type} with ID {entityId} not found.");
+                throw new InvalidOperationException($"{typeof(T).Name} with ID {entityId} not found.");
             }
         }
         private static int GetNextId<T>(List<T> entities)
@@ -156,7 +159,6 @@ namespace Catalogue.Models
             string json = JsonSerializer.Serialize(username);
             File.WriteAllText(UsernameFilePath, json);
         }
-
         public static string LoadUsername()
         {
             if (File.Exists(UsernameFilePath))
@@ -167,7 +169,6 @@ namespace Catalogue.Models
 
             return null;
         }
-
         public static void RemoveUsername()
         {
             if (File.Exists(UsernameFilePath))

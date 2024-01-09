@@ -32,11 +32,11 @@ namespace Catalogue.Models
             "help", 
             "login",
             "logout",
-            "addfilm",
-            "addseries",
-            "addactor",
+            "add",
+            "edit",
+            "delete",
+            "review",
             "search",
-            "review"
         };
         private readonly string[] types = { "film", "series", "actor" };
         private string typesString
@@ -75,25 +75,56 @@ namespace Catalogue.Models
                                 case "logout":
                                     Console.WriteLine($"{appName} {cmd} - Log out from the application.");
                                     break;
-                                case "addfilm":
-                                    Console.WriteLine($"{appName} {cmd} - Add a new film to the catalogue.");
+                                case "add":
+                                    Console.WriteLine($"{appName} {cmd} <type> - Add a new record ({typesString}) to the catalogue.");
                                     break;
-                                case "addseries":
-                                    Console.WriteLine($"{appName} {cmd} - Add a new series to the catalogue.");
+                                case "edit":
+                                    Console.WriteLine($"{appName} {cmd} <type> <id> - Edit details of a record ({typesString}) in the catalogue.");
                                     break;
-                                case "addactor":
-                                    Console.WriteLine($"{appName} {cmd} - Add a new actor to the catalogue.");
-                                    break;
-                                case "addperson":
-                                    Console.WriteLine($"{appName} {cmd} - Add a new person to the catalogue.");
-                                    break;
-                                case "search":
-                                    Console.WriteLine($"{appName} {cmd} - Search and display staff members.");
+                                case "delete":
+                                    Console.WriteLine($"{appName} {cmd} <type> <id> - Delete a record ({typesString}) from the catalogue.");
                                     break;
                                 case "review":
                                     Console.WriteLine($"{appName} {cmd} - Manage reviews for films and series.");
                                     Console.WriteLine($"  {appName} {cmd} add <type> <id> - Add a review for a show (film or series) with the specified ID.");
                                     Console.WriteLine($"  {appName} {cmd} delete <type> <id> - Delete a review for a show (film or series) with the specified ID.");
+                                    break;
+                                case "list":
+                                    Console.WriteLine($"{appName} {cmd} - Manage your personal list of shows.");
+                                    Console.WriteLine($"  {appName} {cmd} add <type> <id> <status> - Add a review for a show (film or series) with the specified ID.");
+                                    Console.WriteLine($"  {appName} {cmd} delete <type> <id> <status> - Delete a review for a show (film or series) with the specified ID.");
+                                    break;
+                                case "search":
+                                    Console.WriteLine($"{appName} {cmd} <type> <type:value> - Search and display shows or actors.");
+                                    Console.WriteLine(" Film search types:");
+                                    Console.WriteLine(" - sort (rating, release, length)");
+                                    Console.WriteLine(" - title");
+                                    Console.WriteLine(" - genres (comma-separated)");
+                                    Console.WriteLine(" - rating (min-max)");
+                                    Console.WriteLine(" - studio");
+                                    Console.WriteLine(" - director");
+                                    Console.WriteLine(" - actors (comma-separated)");
+                                    Console.WriteLine(" - length (min-max in minutes)");
+                                    Console.WriteLine(" - release (min-max in YYYY-MM-DD format)");
+
+                                    Console.WriteLine(" Series search types:");
+                                    Console.WriteLine(" - sort (rating, startdate, seasons, length)");
+                                    Console.WriteLine(" - title");
+                                    Console.WriteLine(" - genres (comma-separated)");
+                                    Console.WriteLine(" - rating (min-max)");
+                                    Console.WriteLine(" - studio");
+                                    Console.WriteLine(" - director");
+                                    Console.WriteLine(" - actors (comma-separated)");
+                                    Console.WriteLine(" - length (min-max in minutes)");
+                                    Console.WriteLine(" - seasons (min-max)");
+                                    Console.WriteLine(" - date (min-max in YYYY-MM-DD format)");
+
+                                    Console.WriteLine(" Actor search types:");
+                                    Console.WriteLine(" - sort (dob)");
+                                    Console.WriteLine(" - name");
+                                    Console.WriteLine(" - nationality");
+                                    Console.WriteLine(" - show");
+                                    Console.WriteLine(" - dob (min-max in YYYY-MM-DD format)");
                                     break;
                                 default:
                                     Console.WriteLine($"Invalid command: {cmd}");
@@ -270,7 +301,197 @@ namespace Catalogue.Models
                             Console.WriteLine("Review deleted.");
                         }
                         break;
+                    case "list":
+
+                        break;
                     case "search":
+                        if (args.Length < 3)
+                        {
+                            throw new InvalidCommandException($"Please specify a type ({typesString}) and at least one filter.");
+                        }
+
+                        type = args[1].ToLower();
+                        Dictionary<string, string> filters = ParseSearchFilters(args.Skip(2));
+
+                        if (!types.Contains(type))
+                        {
+                            throw new MediaTypeException(types);
+                        }
+
+                        switch (type)
+                        {
+                            case "film":
+                                List<Film> films = DataStorage.LoadFilms();
+
+                                foreach (var filter in filters)
+                                {
+                                    switch (filter.Key.ToLower())
+                                    {
+                                        case "sort":
+                                            switch (filter.Value.ToLower())
+                                            {
+                                                case "rating":
+                                                    films = films.OrderByDescending(f => f.AvgRating).ToList();
+                                                    break;
+                                                case "release":
+                                                    films = films.OrderBy(f => f.ReleaseDate).ToList();
+                                                    break;
+                                                case "length":
+                                                    films = films.OrderBy(f => f.EpisodeLength).ToList();
+                                                    break;
+                                                default:
+                                                    Console.WriteLine($"Unknown sort criteria: {filter.Value}");
+                                                    break;
+                                            }
+                                            break;
+                                        case "title":
+                                            films = films.Where(f => f.Title.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            break;
+                                        case "genres":
+                                            films = films.Where(f => f.Genres.Any(g => g.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))).ToList();
+                                            break;
+                                        case "rating":
+                                            var ratingRange = ParseRange(filter.Value);
+                                            films = films.Where(f => f.AvgRating >= ratingRange[0] && f.AvgRating <= ratingRange[1]).ToList();
+                                            break;
+                                        case "studio":
+                                            films = films.Where(f => f.Studio.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            break;
+                                        case "director":
+                                            films = films.Where(f => f.Director.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            break;
+                                        case "actors":
+                                            films = films.Where(f => f.Actors.Any(a => a.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))).ToList();
+                                            break;
+                                        case "length":
+                                            var lengthRange = ParseRange(filter.Value);
+                                            films = films.Where(f => f.EpisodeLength.HasValue && lengthRange.Contains(f.EpisodeLength.Value)).ToList();
+                                            break;
+                                        case "release":
+                                            var (minReleaseDate, maxReleaseDate) = ParseDateRange(filter.Value);
+                                            films = films
+                                                .Where(f => f.ReleaseDate.HasValue && IsDateInRange(f.ReleaseDate.Value, minReleaseDate, maxReleaseDate))
+                                                .ToList();
+                                            break;
+                                        default:
+                                            Console.WriteLine($"Unknown filter: {filter.Key}");
+                                            break;
+                                    }
+                                }
+
+                                DisplayFilmResults(films);
+                                break;
+                            case "series":
+                                List<Series> seriesList = DataStorage.LoadSeries();
+
+                                foreach (var filter in filters)
+                                {
+                                    switch (filter.Key.ToLower())
+                                    {
+                                        case "sort":
+                                            switch (filter.Value.ToLower())
+                                            {
+                                                case "rating":
+                                                    seriesList = seriesList.OrderByDescending(s => s.AvgRating).ToList();
+                                                    break;
+                                                case "startdate":
+                                                    seriesList = seriesList.OrderBy(s => s.StartDate).ToList();
+                                                    break;
+                                                case "seasons":
+                                                    seriesList = seriesList.OrderByDescending(s => s.Seasons).ToList();
+                                                    break;
+                                                case "length":
+                                                    seriesList = seriesList.OrderByDescending(s => s.EpisodeLength).ToList();
+                                                    break;
+                                                default:
+                                                    Console.WriteLine($"Unknown sort criteria: {filter.Value}");
+                                                    break;
+                                            }
+                                            break;
+                                        case "title":
+                                            seriesList = seriesList.Where(s => s.Title.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            break;
+                                        case "genres":
+                                            seriesList = seriesList.Where(s => s.Genres.Any(g => g.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))).ToList();
+                                            break;
+                                        case "rating":
+                                            var ratingRange = ParseRange(filter.Value);
+                                            seriesList = seriesList.Where(s => s.AvgRating >= ratingRange[0] && s.AvgRating <= ratingRange[1]).ToList();
+                                            break;
+                                        case "studio":
+                                            seriesList = seriesList.Where(s => s.Studio.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            break;
+                                        case "director":
+                                            seriesList = seriesList.Where(s => s.Director.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            break;
+                                        case "actors":
+                                            seriesList = seriesList.Where(s => s.Actors.Any(a => a.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))).ToList();
+                                            break;
+                                        case "length":
+                                            var lengthRange = ParseRange(filter.Value);
+                                            seriesList = seriesList.Where(s => s.EpisodeLength.HasValue && lengthRange.Contains(s.EpisodeLength.Value)).ToList();
+                                            break;
+                                        case "seasons":
+                                            var seasonsRange = ParseRange(filter.Value);
+                                            seriesList = seriesList
+                                                .Where(s => s.Seasons != null && seasonsRange.Contains((int)s.Seasons)).ToList();
+                                            break;
+                                        case "date":
+                                            var (minStartDate, maxStartDate) = ParseDateRange(filter.Value);
+                                            seriesList = seriesList
+                                                .Where(s => s.StartDate.HasValue && IsDateInRange(s.StartDate.Value, minStartDate, maxStartDate))
+                                                .ToList();
+                                            break;
+                                        default:
+                                            Console.WriteLine($"Unknown filter: {filter.Key}");
+                                            break;
+                                    }
+                                }
+
+                                DisplaySeriesResults(seriesList);
+                                break;
+                            case "actor":
+                                List<Actor> actors = DataStorage.LoadActors();
+
+                                foreach (var filter in filters)
+                                {
+                                    switch (filter.Key.ToLower())
+                                    {
+                                        case "sort":
+                                            switch (filter.Value.ToLower())
+                                            {
+                                                case "dob":
+                                                    actors = actors.OrderBy(a => a.DateOfBirth).ToList();
+                                                    break;
+                                                default:
+                                                    Console.WriteLine($"Unknown sort criteria: {filter.Value}");
+                                                    break;
+                                            }
+                                            break;
+                                        case "name":
+                                            actors = actors.Where(a => a.FullName.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            break;
+                                        case "nationality":
+                                            actors = actors.Where(a => a.Nationality.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            break;
+                                        case "show":
+                                            actors = actors.Where(a => a.Filmography.Any(show => show.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))).ToList();
+                                            break;
+                                        case "dob":
+                                            var (minDob, maxDob) = ParseDateRange(filter.Value);
+                                            actors = actors
+                                                .Where(a => IsDateInRange(a.DateOfBirth, minDob, maxDob))
+                                                .ToList();
+                                            break;
+                                        default:
+                                            Console.WriteLine($"Unknown filter: {filter.Key}");
+                                            break;
+                                    }
+                                }
+
+                                DisplayActorResults(actors);
+                                break;
+                        }
                         break;
                     default:
                         throw new InvalidCommandException($"Invalid command. Type '{appName} help' to see available commands.");
@@ -281,76 +502,48 @@ namespace Catalogue.Models
                 Console.WriteLine(error.Message);
             }
         }
-        //private Film InputFilm()
-        //{
-        //    Console.WriteLine("Enter film details:");
+        private Dictionary<string, string> ParseSearchFilters(IEnumerable<string> filterArgs)
+        {
+            Dictionary<string, string> filters = new Dictionary<string, string>();
 
-        //    Console.Write("Title: ");
-        //    string title = Console.ReadLine();
+            foreach (var arg in filterArgs)
+            {
+                var parts = arg.Split(':');
+                if (parts.Length == 2)
+                {
+                    filters[parts[0].ToLower()] = parts[1].Trim();
+                }
+            }
 
-        //    Console.Write("Description (optional): ");
-        //    string description = Console.ReadLine();
-
-        //    Console.Write("Genres (comma-separated): ");
-        //    List<string> genres = Console.ReadLine().Split(',').Select(g => g.Trim()).ToList();
-
-        //    Console.Write("Studio: ");
-        //    string studio = Console.ReadLine();
-
-        //    Console.Write("Director: ");
-        //    string director = Console.ReadLine();
-
-        //    Console.Write("Actors (comma-separated): ");
-        //    List<string> actors = Console.ReadLine().Split(',').Select(a => a.Trim()).ToList();
-
-        //    Console.Write("Episode Length (in minutes, optional): ");
-        //    int? episodeLength = int.TryParse(Console.ReadLine(), out int length) ? length : (int?)null;
-
-        //    Console.Write("Release Date (YYYY-MM-DD, optional): ");
-        //    DateOnly? releaseDate = DateOnly.TryParse(Console.ReadLine(), out DateOnly rDate) ? rDate : (DateOnly?)null;
-
-        //    return new Film(title, description, genres, studio, director, actors, episodeLength, releaseDate);
-        //}
-
-        //private Series InputSeries()
-        //{
-        //    Console.WriteLine("Enter series details:");
-
-        //    Console.Write("Title: ");
-        //    string title = Console.ReadLine();
-
-        //    Console.Write("Description (optional): ");
-        //    string description = Console.ReadLine();
-
-        //    Console.Write("Genres (comma-separated): ");
-        //    List<string> genres = Console.ReadLine().Split(',').Select(g => g.Trim()).ToList();
-
-        //    Console.Write("Studio: ");
-        //    string studio = Console.ReadLine();
-
-        //    Console.Write("Director: ");
-        //    string director = Console.ReadLine();
-
-        //    Console.Write("Actors (comma-separated): ");
-        //    List<string> actors = Console.ReadLine().Split(',').Select(a => a.Trim()).ToList();
-
-        //    Console.Write("Episode Length (in minutes, optional): ");
-        //    int? episodeLength = int.TryParse(Console.ReadLine(), out int length) ? length : (int?)null;
-
-        //    Console.Write("Seasons (optional): ");
-        //    int? seasons = int.TryParse(Console.ReadLine(), out int s) ? s : (int?)null;
-
-        //    Console.Write("Episodes per Season (optional): ");
-        //    int? episodesPerSeason = int.TryParse(Console.ReadLine(), out int eps) ? eps : (int?)null;
-
-        //    Console.Write("Start Date (YYYY-MM-DD, optional): ");
-        //    DateOnly? startDate = DateOnly.TryParse(Console.ReadLine(), out DateOnly sDate) ? sDate : (DateOnly?)null;
-
-        //    Console.Write("End Date (YYYY-MM-DD, optional): ");
-        //    DateOnly? endDate = DateOnly.TryParse(Console.ReadLine(), out DateOnly eDate) ? eDate : (DateOnly?)null;
-
-        //    return new Series(title, description, genres, studio, director, actors, episodeLength, seasons, episodesPerSeason, startDate, endDate);
-        //}
+            return filters;
+        }
+        private void DisplayFilmResults(IEnumerable<Film> results)
+        {
+            DisplaySearchResults("Film", results, f => $"{f.Id}, {f.Title}");
+        }
+        private void DisplaySeriesResults(IEnumerable<Series> results)
+        {
+            DisplaySearchResults("Series", results, s => $"{s.Id}, {s.Title}");
+        }
+        private void DisplayActorResults(IEnumerable<Actor> results)
+        {
+            DisplaySearchResults("Actor", results, a => $"{a.Id}, {a.FullName}");
+        }
+        private void DisplaySearchResults<T>(string type, IEnumerable<T> results, Func<T, string> formatFunc)
+        {
+            if (results.Any())
+            {
+                Console.WriteLine($"Search Results ({type}):");
+                foreach (var result in results)
+                {
+                    Console.WriteLine(formatFunc(result));
+                }
+            }
+            else
+            {
+                Console.WriteLine($"No {type.ToLower()} found.");
+            }
+        }
         private string GetInput(string prompt)
         {
             Console.Write(prompt);
@@ -463,10 +656,8 @@ namespace Catalogue.Models
             film.EpisodeLength = EditField("Film Length (in minutes, optional)", GetOptionalInt, film.EpisodeLength);
             film.ReleaseDate = EditField("Release Date (YYYY-MM-DD, optional)", GetOptionalDate, film.ReleaseDate);
 
-
             Console.WriteLine("Film editing complete.");
         }
-
         private void EditSeries(Series series)
         {
             Console.WriteLine("Editing series details. Press 'Enter' to skip a field.");
@@ -496,6 +687,28 @@ namespace Catalogue.Models
             actor.Filmography = EditListField("Filmography (comma-separated)", actor.Filmography);
 
             Console.WriteLine("Actor editing complete.");
+        }
+        private static List<int> ParseRange(string range)
+        {
+            var parts = range.Split('-');
+            if (parts.Length == 2 && int.TryParse(parts[0], out int min) && int.TryParse(parts[1], out int max))
+            {
+                return Enumerable.Range(min, max - min + 1).ToList();
+            }
+            return new List<int>();
+        }
+        private static bool IsDateInRange(DateOnly date, DateOnly minDate, DateOnly maxDate)
+        {
+            return date.CompareTo(minDate) >= 0 && date.CompareTo(maxDate) <= 0;
+        }
+        private static (DateOnly, DateOnly) ParseDateRange(string dateRange)
+        {
+            var parts = dateRange.Split('-');
+            if (parts.Length == 2 && DateOnly.TryParse(parts[0], out DateOnly minDate) && DateOnly.TryParse(parts[1], out DateOnly maxDate))
+            {
+                return (minDate, maxDate);
+            }
+            return (default, default);
         }
     }
 }
