@@ -34,7 +34,9 @@ namespace Catalogue.Models
             get => title;
             set
             {
-                if (value.Length > 1000)
+                if (string.IsNullOrEmpty(value) || value.Length < 3)
+                    throw new ArgumentException("The title is too short.");
+                if (value.Length > 100)
                     throw new ArgumentException("The title is too long.");
                 title = value;
             }
@@ -44,6 +46,8 @@ namespace Catalogue.Models
             get => description;
             set
             {
+                if (value != null && value.Length < 3)
+                    throw new ArgumentException("The description is too short.");
                 if (value != null && value.Length > 1000)
                     throw new ArgumentException("The description is too long.");
                 description = value;
@@ -57,12 +61,26 @@ namespace Catalogue.Models
         public string Studio
         {
             get => studio;
-            set => studio = value;
+            set
+            {
+                if (string.IsNullOrEmpty(value) || value.Length < 3)
+                    throw new ArgumentException("The studio name is too short.");
+                if (value.Length > 100)
+                    throw new ArgumentException("The studio name is too long.");
+                studio = value;
+            }
         }
         public string Director
         {
             get => director;
-            set => director = value;
+            set
+            {
+                if (string.IsNullOrEmpty(value) || value.Length < 3)
+                    throw new ArgumentException("The studio name is too short.");
+                if (value.Length > 100)
+                    throw new ArgumentException("The studio name is too long.");
+                director = value;
+            }
         }
         public List<Review> Reviews
         {
@@ -86,6 +104,8 @@ namespace Catalogue.Models
             {
                 if (value <= 0)
                     throw new ArgumentException("Episode length can be only a positive number in minutes.");
+                if (value > 1000)
+                    throw new ArgumentException("Episode length can't be longer than 1000 minutes.");
                 episodeLength = value;
             }
         }

@@ -28,6 +28,10 @@ namespace Catalogue.Models
         {
             return LoadEntities<Actor>(ActorsFilePath);
         }
+        public static List<ListItem> LoadListItems()
+        {
+            return LoadEntities<ListItem>(UserListFilePath);
+        }
         public static List<ListItem> LoadUserList(string username)
         {
             List<ListItem> userItems = LoadEntities<ListItem>(UserListFilePath) ?? new List<ListItem>();
@@ -126,13 +130,22 @@ namespace Catalogue.Models
         // Generic method to load entities from a file
         private static List<T> LoadEntities<T>(string filePath)
         {
-            if (File.Exists(filePath))
+            try
             {
-                string json = File.ReadAllText(filePath);
-                return JsonSerializer.Deserialize<List<T>>(json);
-            }
+                if (File.Exists(filePath))
+                {
+                    string json = File.ReadAllText(filePath);
+                    return JsonSerializer.Deserialize<List<T>>(json);
+                }
 
-            return new List<T>();
+                return new List<T>();
+            }
+            // Catches an error on deserialization when one of the records is corrupt and doesn't match the validations in the constructor
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw new JsonException($"Error while loading {typeof(T).Name.ToLower()} from a file. One of the records is likely to be corrupt.");
+            }
         }
         // Generic method to load an entity from a file
         private static T LoadEntity<T>(string filePath, int entityId)

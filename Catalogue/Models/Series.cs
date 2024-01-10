@@ -17,12 +17,26 @@ namespace Catalogue.Models
         public int? Seasons
         {
             get => seasons;
-            set => seasons = value;
+            set
+            {
+                if (value <= 0)
+                    throw new ArgumentException("Seasons can be only a positive number in minutes.");
+                if (value > 100)
+                    throw new ArgumentException("Seasons can't be over 100.");
+                seasons = value;
+            }
         }
         public int? Episodes
         {
             get => episodes;
-            set => episodes = value;
+            set
+            {
+                if (value <= 0)
+                    throw new ArgumentException("Episodes can be only a positive number in minutes.");
+                if (value > 1000)
+                    throw new ArgumentException("Episodes can't be longer than 1000 minutes.");
+                episodes = value;
+            }
         }
         public DateOnly? StartDate
         {
@@ -58,21 +72,22 @@ namespace Catalogue.Models
 
         [JsonConstructor]
         public Series(
-        int id,
-        string title,
-        string? description,
-        List<string> genres,
-        string studio,
-        string director,
-        List<string> actors,
-        int? episodeLength,
-        int? seasons,
-        int? episodes,
-        DateOnly? startDate,
-        DateOnly? endDate,
-        List<Review> reviews,
-        double? avgRating)
-        : base(title, description, genres, studio, director, actors, episodeLength)
+            int id,
+            string title,
+            string? description,
+            List<string> genres,
+            string studio,
+            string director,
+            List<string> actors,
+            int? episodeLength,
+            int? seasons,
+            int? episodes,
+            DateOnly? startDate,
+            DateOnly? endDate,
+            List<Review> reviews,
+            double? avgRating
+        )
+            : base(title, description, genres, studio, director, actors, episodeLength)
         {
             Id = id;
             Seasons = seasons;
