@@ -24,7 +24,12 @@ namespace Catalogue.Models
         public string FullName
         {
             get => fullName;
-            set => fullName = value;
+            set
+            {
+                if (value.Length > 1000)
+                    throw new ArgumentException("The name is too long.");
+                fullName = value;
+            }
         }
 
         public DateOnly DateOfBirth

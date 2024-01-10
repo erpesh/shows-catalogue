@@ -45,7 +45,7 @@ namespace Catalogue.Models
             set
             {
                 if (value != null && value.Length > 1000)
-                    throw new ArgumentException("The title is too long.");
+                    throw new ArgumentException("The description is too long.");
                 description = value;
             }
         }

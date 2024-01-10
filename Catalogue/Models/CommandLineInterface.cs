@@ -400,7 +400,7 @@ namespace Catalogue.Models
                             }
 
                             userList
-                                .OrderBy(item => item.Status == "completed")
+                                .OrderByDescending(item => item.Status) // Order of statuses: watching, planning, completed
                                 .ToList()
                                 .ForEach(item =>
                             {
@@ -519,13 +519,22 @@ namespace Catalogue.Models
                                             switch (filter.Value.ToLower())
                                             {
                                                 case "rating":
-                                                    films = films.OrderByDescending(f => f.AvgRating).ToList();
+                                                    films = films
+                                                        .AsParallel()
+                                                        .OrderByDescending(f => f.AvgRating)
+                                                        .ToList();
                                                     break;
                                                 case "release":
-                                                    films = films.OrderBy(f => f.ReleaseDate).ToList();
+                                                    films = films
+                                                        .AsParallel()
+                                                        .OrderBy(f => f.ReleaseDate)
+                                                        .ToList();
                                                     break;
                                                 case "length":
-                                                    films = films.OrderByDescending(f => f.EpisodeLength).ToList();
+                                                    films = films
+                                                        .AsParallel()
+                                                        .OrderByDescending(f => f.EpisodeLength)
+                                                        .ToList();
                                                     break;
                                                 default:
                                                     Console.WriteLine($"Unknown sort criteria: {filter.Value}");
@@ -533,33 +542,55 @@ namespace Catalogue.Models
                                             }
                                             break;
                                         case "title":
-                                            films = films.Where(f => f.Title.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            films = films
+                                                .AsParallel()
+                                                .Where(f => f.Title.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))
+                                                .ToList();
                                             break;
                                         case "genres":
                                             var genres = ParseCommaSeparated(filter.Value);
-                                            films = films.Where(f => genres.All(genre => f.Genres.Contains(genre))).ToList();
+                                            films = films
+                                                .AsParallel()
+                                                .Where(f => genres.All(genre => f.Genres.Contains(genre)))
+                                                .ToList();
                                             break;
                                         case "rating":
                                             var (minRating, maxRating) = ParseRange(filter.Value);
-                                            films = films.Where(f => f.AvgRating >= minRating && f.AvgRating <= maxRating).ToList();
+                                            films = films
+                                                .AsParallel()
+                                                .Where(f => f.AvgRating >= minRating && f.AvgRating <= maxRating)
+                                                .ToList();
                                             break;
                                         case "studio":
-                                            films = films.Where(f => f.Studio.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            films = films
+                                                .AsParallel()
+                                                .Where(f => f.Studio.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))
+                                                .ToList();
                                             break;
                                         case "director":
-                                            films = films.Where(f => f.Director.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            films = films
+                                                .AsParallel()
+                                                .Where(f => f.Director.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))
+                                                .ToList();
                                             break;
                                         case "actors":
                                             var parsedActors = ParseCommaSeparated(filter.Value);
-                                            films = films.Where(f => parsedActors.All(actor => f.Actors.Contains(actor))).ToList();
+                                            films = films
+                                                .AsParallel()
+                                                .Where(f => parsedActors.All(actor => f.Actors.Contains(actor)))
+                                                .ToList();
                                             break;
                                         case "length":
                                             var (minLength, maxLength) = ParseRange(filter.Value);
-                                            films = films.Where(f => f.EpisodeLength != null && f.EpisodeLength >= minLength && f.EpisodeLength <= maxLength).ToList();
+                                            films = films
+                                                .AsParallel()
+                                                .Where(f => f.EpisodeLength != null && f.EpisodeLength >= minLength && f.EpisodeLength <= maxLength)
+                                                .ToList();
                                             break;
                                         case "release":
                                             var (minReleaseDate, maxReleaseDate) = ParseDateRange(filter.Value);
                                             films = films
+                                                .AsParallel()
                                                 .Where(f => f.ReleaseDate.HasValue && IsDateInRange(f.ReleaseDate.Value, minReleaseDate, maxReleaseDate))
                                                 .ToList();
                                             break;
@@ -582,16 +613,28 @@ namespace Catalogue.Models
                                             switch (filter.Value.ToLower())
                                             {
                                                 case "rating":
-                                                    seriesList = seriesList.OrderByDescending(s => s.AvgRating).ToList();
+                                                    seriesList = seriesList
+                                                        .AsParallel()
+                                                        .OrderByDescending(s => s.AvgRating)
+                                                        .ToList();
                                                     break;
                                                 case "startdate":
-                                                    seriesList = seriesList.OrderBy(s => s.StartDate).ToList();
+                                                    seriesList = seriesList
+                                                        .AsParallel()
+                                                        .OrderBy(s => s.StartDate)
+                                                        .ToList();
                                                     break;
                                                 case "seasons":
-                                                    seriesList = seriesList.OrderByDescending(s => s.Seasons).ToList();
+                                                    seriesList = seriesList
+                                                        .AsParallel()
+                                                        .OrderByDescending(s => s.Seasons)
+                                                        .ToList();
                                                     break;
                                                 case "length":
-                                                    seriesList = seriesList.OrderByDescending(s => s.EpisodeLength).ToList();
+                                                    seriesList = seriesList
+                                                        .AsParallel()
+                                                        .OrderByDescending(s => s.EpisodeLength)
+                                                        .ToList();
                                                     break;
                                                 default:
                                                     Console.WriteLine($"Unknown sort criteria: {filter.Value}");
@@ -599,38 +642,63 @@ namespace Catalogue.Models
                                             }
                                             break;
                                         case "title":
-                                            seriesList = seriesList.Where(s => s.Title.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            seriesList = seriesList
+                                                .AsParallel()
+                                                .Where(s => s.Title.Contains(filter.Value, 
+                                                StringComparison.OrdinalIgnoreCase)) // Ignore case Ref:https://stackoverflow.com/a/444818
+                                                .ToList();
                                             break;
                                         case "genres":
                                             var genres = ParseCommaSeparated(filter.Value);
-                                            seriesList = seriesList.Where(s => genres.All(genre => s.Genres.Contains(genre))).ToList();
+                                            seriesList = seriesList
+                                                .AsParallel()
+                                                .Where(s => genres.All(genre => s.Genres.Contains(genre)))
+                                                .ToList();
                                             break;
                                         case "rating":
                                             var (minRating, maxRating) = ParseRange(filter.Value);
-                                            seriesList = seriesList.Where(s => s.AvgRating >= minRating && s.AvgRating <= maxRating).ToList();
+                                            seriesList = seriesList
+                                                .AsParallel()
+                                                .Where(s => s.AvgRating >= minRating && s.AvgRating <= maxRating)
+                                                .ToList();
                                             break;
                                         case "studio":
-                                            seriesList = seriesList.Where(s => s.Studio.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            seriesList = seriesList
+                                                .AsParallel()
+                                                .Where(s => s.Studio.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))
+                                                .ToList();
                                             break;
                                         case "director":
-                                            seriesList = seriesList.Where(s => s.Director.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            seriesList = seriesList
+                                                .AsParallel()
+                                                .Where(s => s.Director.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))
+                                                .ToList();
                                             break;
                                         case "actors":
                                             var parsedActors = ParseCommaSeparated(filter.Value);
-                                            seriesList = seriesList.Where(s => parsedActors.All(actor => s.Actors.Contains(actor))).ToList();
+                                            seriesList = seriesList
+                                                .AsParallel()
+                                                .Where(s => parsedActors.All(actor => s.Actors.Contains(actor)))
+                                                .ToList();
                                             break;
                                         case "length":
                                             var (minLength, maxLength) = ParseRange(filter.Value);
-                                            seriesList = seriesList.Where(s => s.EpisodeLength != null && s.EpisodeLength >= minLength && s.EpisodeLength <= maxLength).ToList();
+                                            seriesList = seriesList
+                                                .AsParallel()
+                                                .Where(s => s.EpisodeLength != null && s.EpisodeLength >= minLength && s.EpisodeLength <= maxLength)
+                                                .ToList();
                                             break;
                                         case "seasons":
                                             var (minSeasons, maxSeasons) = ParseRange(filter.Value);
                                             seriesList = seriesList
-                                                .Where(s => s.Seasons != null && s.Seasons >= minSeasons && s.Seasons <= maxSeasons).ToList();
+                                                .AsParallel()
+                                                .Where(s => s.Seasons != null && s.Seasons >= minSeasons && s.Seasons <= maxSeasons)
+                                                .ToList();
                                             break;
                                         case "date":
                                             var (minStartDate, maxStartDate) = ParseDateRange(filter.Value);
                                             seriesList = seriesList
+                                                .AsParallel()
                                                 .Where(s => s.StartDate.HasValue && IsDateInRange(s.StartDate.Value, minStartDate, maxStartDate))
                                                 .ToList();
                                             break;
@@ -653,7 +721,10 @@ namespace Catalogue.Models
                                             switch (filter.Value.ToLower())
                                             {
                                                 case "dob":
-                                                    actors = actors.OrderBy(a => a.DateOfBirth).ToList();
+                                                    actors = actors
+                                                        .AsParallel()
+                                                        .OrderBy(a => a.DateOfBirth)
+                                                        .ToList();
                                                     break;
                                                 default:
                                                     Console.WriteLine($"Unknown sort criteria: {filter.Value}");
@@ -661,17 +732,27 @@ namespace Catalogue.Models
                                             }
                                             break;
                                         case "name":
-                                            actors = actors.Where(a => a.FullName.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            actors = actors
+                                                .AsParallel()
+                                                .Where(a => a.FullName.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))
+                                                .ToList();
                                             break;
                                         case "nationality":
-                                            actors = actors.Where(a => a.Nationality.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
+                                            actors = actors
+                                                .AsParallel()
+                                                .Where(a => a.Nationality.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))
+                                                .ToList();
                                             break;
                                         case "show":
-                                            actors = actors.Where(a => a.Filmography.Any(show => show.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))).ToList();
+                                            actors = actors
+                                                .AsParallel()
+                                                .Where(a => a.Filmography.Any(show => show.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)))
+                                                .ToList();
                                             break;
                                         case "dob":
                                             var (minDob, maxDob) = ParseDateRange(filter.Value);
                                             actors = actors
+                                                .AsParallel()
                                                 .Where(a => IsDateInRange(a.DateOfBirth, minDob, maxDob))
                                                 .ToList();
                                             break;
@@ -751,6 +832,10 @@ namespace Catalogue.Models
         {
             return GetInput(propmt).Split(',').Select(a => a.Trim()).ToList();  
         }
+        private int GetInt(string prompt)
+        {
+            return int.Parse(GetInput(prompt));
+        }
         private int? GetOptionalInt(string prompt)
         {
             return int.TryParse(GetInput(prompt), out int value) ? (int?)value : null;
@@ -825,12 +910,7 @@ namespace Catalogue.Models
         {
             Console.WriteLine("Enter review details:");
 
-            Console.Write("Rating (1-10): ");
-            if (!int.TryParse(Console.ReadLine(), out int rating) || rating < 1 || rating > 10)
-            {
-                throw new FormatException("Invalid rating. Please enter a valid integer between 1 and 10.");
-            }
-
+            int rating = GetInt("Rating (1-10): ");
             string? comment = GetOptionalInput("Comment (optional): ");
 
             return new Review(username, rating, comment);

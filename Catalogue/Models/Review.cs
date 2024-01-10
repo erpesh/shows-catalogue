@@ -9,10 +9,45 @@ namespace Catalogue.Models
 {
     public class Review
     {
-        public string Username { get; set; }
-        public int Rating { get; set; }
-        public string? Comment { get; set; }
-        public DateTime Date { get; set; }
+        private string username;
+        private int rating;
+        private string? comment;
+        private DateTime date;
+
+        public string Username
+        {
+            get => username;
+            set
+            {
+                if (value.Length > 20)
+                    throw new ArgumentException("The username is too long.");
+                username = value;
+            }
+        }
+        public int Rating
+        {
+            get => rating;
+            set
+            {
+                if (value < 1 || value > 10)
+                    throw new ArgumentException("The rating must be between 1 and 10.");
+                rating = value;
+            }
+        }
+        public string? Comment 
+        {
+            get => comment;
+            set
+            {
+                if (value != null && value.Length > 1000)
+                    throw new ArgumentException("The comment is too long.");
+            }
+        }
+        public DateTime Date
+        {
+            get => date;
+            set => date = value;
+        }
 
         public Review(string username, int rating, string? comment)
         {
