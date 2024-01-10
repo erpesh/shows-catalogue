@@ -24,7 +24,7 @@ namespace Catalogue.Models
         };
         private readonly string[] types = { "film", "series", "actor" };
         private readonly string[] statuses = { "completed", "watching", "planning" };
-        private string[] subcommands = { "add", "delete" };
+        private readonly string[] subcommands = { "add", "delete" };
 
         private string typesString => string.Join(", ", types);
         private string statusesString => string.Join(", ", statuses);
@@ -39,11 +39,15 @@ namespace Catalogue.Models
                     throw new InvalidCommandException($"Type '{appName} help' to see available commands.");
                 }
 
+                // Declaring variable to prevent scope issues in switch statements
                 string command = args[0].ToLower();
                 string type;
                 string subcommand;
                 int id;
                 string username;
+                List<Film> films;
+                List<Series> seriesList;
+                List<Actor> actors;
 
                 string[] reviewTypes = { "film", "series" };
 
@@ -58,7 +62,6 @@ namespace Catalogue.Models
                                 case "help":
                                     Console.WriteLine($"{appName} {cmd} - Display available commands and their usage.");
                                     break;
-                                // TODO: Implement stats command
                                 case "stats":
                                     Console.WriteLine($"{appName} {cmd} - Display statistics about the catalogue.");
                                     break;
@@ -95,22 +98,22 @@ namespace Catalogue.Models
                                     Console.WriteLine(" Film search types:");
                                     Console.WriteLine(" - sort (rating, release, length)");
                                     Console.WriteLine(" - title");
-                                    Console.WriteLine(" - genres (comma-separated)");
+                                    Console.WriteLine(" - genres (comma-separated in quotes)");
                                     Console.WriteLine(" - rating (min-max)");
                                     Console.WriteLine(" - studio");
                                     Console.WriteLine(" - director");
-                                    Console.WriteLine(" - actors (comma-separated)");
+                                    Console.WriteLine(" - actors (comma-separated in quotes)");
                                     Console.WriteLine(" - length (min-max in minutes)");
                                     Console.WriteLine(" - release (min-max in YYYY format)");
 
                                     Console.WriteLine(" Series search types:");
                                     Console.WriteLine(" - sort (rating, startdate, seasons, length)");
                                     Console.WriteLine(" - title");
-                                    Console.WriteLine(" - genres (comma-separated)");
+                                    Console.WriteLine(" - genres (comma-separated in quotes)");
                                     Console.WriteLine(" - rating (min-max)");
                                     Console.WriteLine(" - studio");
                                     Console.WriteLine(" - director");
-                                    Console.WriteLine(" - actors (comma-separated)");
+                                    Console.WriteLine(" - actors (comma-separated in quotes)");
                                     Console.WriteLine(" - length (min-max in minutes)");
                                     Console.WriteLine(" - seasons (min-max)");
                                     Console.WriteLine(" - date (min-max in YYYY format)");
@@ -128,6 +131,25 @@ namespace Catalogue.Models
                             }
                         }
                         break;
+                    case "stats":
+                        films = DataStorage.LoadFilms();
+                        seriesList = DataStorage.LoadSeries();
+                        actors = DataStorage.LoadActors();
+                        //var listItems = DataStorage.LoadListItems();
+
+                        Console.WriteLine("Statistics: ");
+                        Console.WriteLine($"  Films: {films.Count}");
+                        Console.WriteLine($"  Series: {seriesList.Count}");
+                        Console.WriteLine($"  Actors: {actors.Count}");
+                        //Console.WriteLine($"  List items: {listItems.Count}");
+
+                        var reviews = films
+                            .SelectMany(f => f.Reviews)
+                            .Concat(seriesList.SelectMany(s => s.Reviews));
+                        Console.WriteLine($"  Reviews: {reviews.Count()}");
+                        Console.WriteLine($"  Average rating: {reviews.Average(r => r.Rating)}");
+
+                        break;
                     case "login":
                         username = args.Length > 1 ? args[1].Trim() : null;
                         if (string.IsNullOrWhiteSpace(username))
@@ -143,12 +165,15 @@ namespace Catalogue.Models
                         Console.WriteLine("Logged out.");
                         break;
                     case "view":
+                        // Check if type and ID are specified
                         if (args.Length < 3)
                         {
                             throw new InvalidCommandException($"Please specify a type ({typesString}) and ID.");
                         }
 
                         type = args[1].ToLower();
+
+                        // Check if type is valid
                         if (!types.Contains(type))
                         {
                             throw new MediaTypeException(types);
@@ -174,12 +199,15 @@ namespace Catalogue.Models
 
                         break;
                     case "add":
+                        // Check if type is specified
                         if (args.Length < 2)
                         {
                             throw new MediaTypeException(types);
                         }
 
                         type = args[1].ToLower();
+
+                        // Check if type is valid
                         if (!types.Contains(type))
                         {
                             throw new MediaTypeException(types);
@@ -205,6 +233,7 @@ namespace Catalogue.Models
                         }
                         break;
                     case "edit":
+                        // Check if type and ID are specified
                         if (args.Length < 3)
                         {
                             throw new InvalidCommandException($"Please specify a type ({typesString}) and ID.");
@@ -213,6 +242,7 @@ namespace Catalogue.Models
                         type = args[1].ToLower();
                         id = int.Parse(args[2]);
 
+                        // Check if type is valid
                         if (!types.Contains(type))
                         {
                             throw new MediaTypeException(types);
@@ -238,6 +268,7 @@ namespace Catalogue.Models
                         }
                         break;
                     case "delete":
+                        // Check if type and ID are specified
                         if (args.Length < 3)
                         {
                             throw new InvalidCommandException($"Please specify a type ({typesString}) and ID.");
@@ -246,6 +277,7 @@ namespace Catalogue.Models
                         type = args[1].ToLower();
                         id = int.Parse(args[2]);
 
+                        // Check if type is valid
                         if (!types.Contains(type))
                         {
                             throw new MediaTypeException(types);
@@ -268,6 +300,7 @@ namespace Catalogue.Models
                         }
                         break;
                     case "review":
+                        // Check if subcommand, type and ID are specified
                         if (args.Length < 4)
                         {
                             throw new InvalidCommandException($"Please specify a subcommand (add, delete), type ({typesString}), and ID.");
@@ -277,15 +310,18 @@ namespace Catalogue.Models
                         type = args[2].ToLower();
                         id = int.Parse(args[3]);
 
+                        // Check if subcommand is valid
                         if (!subcommands.Contains(subcommand))
                         {
                             throw new InvalidCommandException($"Invalid subcommand. Available subcommands: {subcommandsString}");
                         }
+                        // Check if type is valid
                         if (!types.Contains(type))
                         {
                             throw new MediaTypeException(reviewTypes);
                         }
 
+                        // Check if user is logged in
                         username = DataStorage.LoadUsername();
                         if (string.IsNullOrWhiteSpace(username))
                         {
@@ -455,23 +491,25 @@ namespace Catalogue.Models
                         }
                         break;
                     case "search":
+                        // Check if type is specified
                         if (args.Length < 2)
                         {
                             throw new InvalidCommandException($"Please specify a type ({typesString}).");
                         }
 
+                        // Check if type is valid
                         type = args[1].ToLower();
-                        Dictionary<string, string> filters = ParseSearchFilters(args.Skip(2));
-
                         if (!types.Contains(type))
                         {
                             throw new MediaTypeException(types);
                         }
 
+                        Dictionary<string, string> filters = ParseSearchFilters(args.Skip(2));
+
                         switch (type)
                         {
                             case "film":
-                                List<Film> films = DataStorage.LoadFilms();
+                                films = DataStorage.LoadFilms();
 
                                 foreach (var filter in filters)
                                 {
@@ -498,11 +536,12 @@ namespace Catalogue.Models
                                             films = films.Where(f => f.Title.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
                                             break;
                                         case "genres":
-                                            films = films.Where(f => f.Genres.Any(g => g.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))).ToList();
+                                            var genres = ParseCommaSeparated(filter.Value);
+                                            films = films.Where(f => genres.All(genre => f.Genres.Contains(genre))).ToList();
                                             break;
                                         case "rating":
-                                            var ratingRange = ParseRange(filter.Value);
-                                            films = films.Where(f => f.AvgRating >= ratingRange[0] && f.AvgRating <= ratingRange[1]).ToList();
+                                            var (minRating, maxRating) = ParseRange(filter.Value);
+                                            films = films.Where(f => f.AvgRating >= minRating && f.AvgRating <= maxRating).ToList();
                                             break;
                                         case "studio":
                                             films = films.Where(f => f.Studio.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -511,11 +550,12 @@ namespace Catalogue.Models
                                             films = films.Where(f => f.Director.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
                                             break;
                                         case "actors":
-                                            films = films.Where(f => f.Actors.Any(a => a.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))).ToList();
+                                            var parsedActors = ParseCommaSeparated(filter.Value);
+                                            films = films.Where(f => parsedActors.All(actor => f.Actors.Contains(actor))).ToList();
                                             break;
                                         case "length":
-                                            var lengthRange = ParseRange(filter.Value);
-                                            films = films.Where(f => f.EpisodeLength.HasValue && lengthRange.Contains(f.EpisodeLength.Value)).ToList();
+                                            var (minLength, maxLength) = ParseRange(filter.Value);
+                                            films = films.Where(f => f.EpisodeLength != null && f.EpisodeLength >= minLength && f.EpisodeLength <= maxLength).ToList();
                                             break;
                                         case "release":
                                             var (minReleaseDate, maxReleaseDate) = ParseDateRange(filter.Value);
@@ -532,7 +572,7 @@ namespace Catalogue.Models
                                 DisplayFilmResults(films);
                                 break;
                             case "series":
-                                List<Series> seriesList = DataStorage.LoadSeries();
+                                seriesList = DataStorage.LoadSeries();
 
                                 foreach (var filter in filters)
                                 {
@@ -562,11 +602,12 @@ namespace Catalogue.Models
                                             seriesList = seriesList.Where(s => s.Title.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
                                             break;
                                         case "genres":
-                                            seriesList = seriesList.Where(s => s.Genres.Any(g => g.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))).ToList();
+                                            var genres = ParseCommaSeparated(filter.Value);
+                                            seriesList = seriesList.Where(s => genres.All(genre => s.Genres.Contains(genre))).ToList();
                                             break;
                                         case "rating":
-                                            var ratingRange = ParseRange(filter.Value);
-                                            seriesList = seriesList.Where(s => s.AvgRating >= ratingRange[0] && s.AvgRating <= ratingRange[1]).ToList();
+                                            var (minRating, maxRating) = ParseRange(filter.Value);
+                                            seriesList = seriesList.Where(s => s.AvgRating >= minRating && s.AvgRating <= maxRating).ToList();
                                             break;
                                         case "studio":
                                             seriesList = seriesList.Where(s => s.Studio.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -575,16 +616,17 @@ namespace Catalogue.Models
                                             seriesList = seriesList.Where(s => s.Director.Contains(filter.Value, StringComparison.OrdinalIgnoreCase)).ToList();
                                             break;
                                         case "actors":
-                                            seriesList = seriesList.Where(s => s.Actors.Any(a => a.Contains(filter.Value, StringComparison.OrdinalIgnoreCase))).ToList();
+                                            var parsedActors = ParseCommaSeparated(filter.Value);
+                                            seriesList = seriesList.Where(s => parsedActors.All(actor => s.Actors.Contains(actor))).ToList();
                                             break;
                                         case "length":
-                                            var lengthRange = ParseRange(filter.Value);
-                                            seriesList = seriesList.Where(s => s.EpisodeLength.HasValue && lengthRange.Contains(s.EpisodeLength.Value)).ToList();
+                                            var (minLength, maxLength) = ParseRange(filter.Value);
+                                            seriesList = seriesList.Where(s => s.EpisodeLength != null && s.EpisodeLength >= minLength && s.EpisodeLength <= maxLength).ToList();
                                             break;
                                         case "seasons":
-                                            var seasonsRange = ParseRange(filter.Value);
+                                            var (minSeasons, maxSeasons) = ParseRange(filter.Value);
                                             seriesList = seriesList
-                                                .Where(s => s.Seasons != null && seasonsRange.Contains((int)s.Seasons)).ToList();
+                                                .Where(s => s.Seasons != null && s.Seasons >= minSeasons && s.Seasons <= maxSeasons).ToList();
                                             break;
                                         case "date":
                                             var (minStartDate, maxStartDate) = ParseDateRange(filter.Value);
@@ -601,7 +643,7 @@ namespace Catalogue.Models
                                 DisplaySeriesResults(seriesList);
                                 break;
                             case "actor":
-                                List<Actor> actors = DataStorage.LoadActors();
+                                actors = DataStorage.LoadActors();
 
                                 foreach (var filter in filters)
                                 {
@@ -669,15 +711,15 @@ namespace Catalogue.Models
         }
         private void DisplayFilmResults(IEnumerable<Film> results)
         {
-            DisplaySearchResults("Film", results, f => $"{f.Id}, {f.Title}");
+            DisplaySearchResults("Film", results, f => $"{f.Id}: {f.Title}");
         }
         private void DisplaySeriesResults(IEnumerable<Series> results)
         {
-            DisplaySearchResults("Series", results, s => $"{s.Id}, {s.Title}");
+            DisplaySearchResults("Series", results, s => $"{s.Id}: {s.Title}");
         }
         private void DisplayActorResults(IEnumerable<Actor> results)
         {
-            DisplaySearchResults("Actor", results, a => $"{a.Id}, {a.FullName}");
+            DisplaySearchResults("Actor", results, a => $"{a.Id}: {a.FullName}");
         }
         private void DisplaySearchResults<T>(string type, IEnumerable<T> results, Func<T, string> formatFunc)
         {
@@ -838,35 +880,39 @@ namespace Catalogue.Models
 
             Console.WriteLine("Actor editing complete.");
         }
-        private static List<int> ParseRange(string range)
+        private static (int, int) ParseRange(string range)
         {
             var parts = range.Split('-');
             if (parts.Length == 2 && int.TryParse(parts[0], out int min) && int.TryParse(parts[1], out int max))
             {
-                return Enumerable.Range(min, max - min + 1).ToList();
+                return (min, max);
             }
-            return new List<int>();
+            return (1, 10);
+        }
+        private static List<string> ParseCommaSeparated(string commaSeparated)
+        {
+            return commaSeparated.Split(',').Select(a => a.Trim()).ToList();
         }
         private static bool IsDateInRange(DateOnly date, DateOnly minDate, DateOnly maxDate)
         {
             return date.CompareTo(minDate) >= 0 && date.CompareTo(maxDate) <= 0;
         }
         private static (DateOnly, DateOnly) ParseDateRange(string dateRange)
-{
-    var parts = dateRange.Split('-');
+        {
+            var parts = dateRange.Split('-');
     
-    if (parts.Length == 2 &&
-        int.TryParse(parts[0], out int startYear) &&
-        int.TryParse(parts[1], out int endYear) &&
-        startYear <= endYear)
-    {
-        DateOnly minDate = new DateOnly(startYear, 1, 1);
-        DateOnly maxDate = new DateOnly(endYear, 12, 31);
+            if (parts.Length == 2 &&
+                int.TryParse(parts[0], out int startYear) &&
+                int.TryParse(parts[1], out int endYear) &&
+                startYear <= endYear)
+            {
+                DateOnly minDate = new DateOnly(startYear, 1, 1);
+                DateOnly maxDate = new DateOnly(endYear, 12, 31);
 
-        return (minDate, maxDate);
-    }
+                return (minDate, maxDate);
+            }
 
-    return (default, default);
-}
+            return (default, default);
+        }
     }
 }

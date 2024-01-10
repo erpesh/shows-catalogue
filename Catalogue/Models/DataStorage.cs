@@ -117,12 +117,13 @@ namespace Catalogue.Models
                 throw new InvalidOperationException($"List item not found.");
             }
         }
+        // Generic method to save entities to a file
         private static void SaveEntities<T>(List<T> entities, string filePath)
         {
             string json = JsonSerializer.Serialize(entities);
             File.WriteAllText(filePath, json);
         }
-
+        // Generic method to load entities from a file
         private static List<T> LoadEntities<T>(string filePath)
         {
             if (File.Exists(filePath))
@@ -133,7 +134,7 @@ namespace Catalogue.Models
 
             return new List<T>();
         }
-
+        // Generic method to load an entity from a file
         private static T LoadEntity<T>(string filePath, int entityId)
         {
             List<T> entities = LoadEntities<T>(filePath);
@@ -144,6 +145,7 @@ namespace Catalogue.Models
             }
             return entity;
         }
+        // Generic method to update an entity in a file
         private static void UpdateEntity<T>(T updatedEntity, string filePath)
         {
             List<T> entities = LoadEntities<T>(filePath);
@@ -159,6 +161,7 @@ namespace Catalogue.Models
                 throw new InvalidOperationException($"{typeof(T).Name} with ID {updatedEntity.GetType().GetProperty("Id").GetValue(updatedEntity)} not found.");
             }
         }
+        // Generic method to delete an entity from a file
         public static void DeleteEntity<T>(int entityId, string filePath)
         {
             List<T> entities = LoadEntities<T>(filePath);
@@ -174,6 +177,7 @@ namespace Catalogue.Models
                 throw new InvalidOperationException($"{typeof(T).Name} with ID {entityId} not found.");
             }
         }
+        // Get the next ID for a new entity
         private static int GetNextId<T>(List<T> entities)
         {
             int nextId = entities.Count > 0 ?
