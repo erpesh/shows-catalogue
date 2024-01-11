@@ -142,6 +142,7 @@ namespace Catalogue.Models
                 Reviews.Remove(review);
                 AvgRating = CalculateAvgRating();
             }
+            throw new InvalidOperationException("Review not found.");
         }
         protected double? CalculateAvgRating()
         {

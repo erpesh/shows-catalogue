@@ -10,7 +10,7 @@ namespace Catalogue.Models
 {
     public static class DataStorage
     {
-        private const string UsernameFilePath = "username.dat";
+        private const string UsernameFilePath = "username.json";
         private const string FilmsFilePath = "films.json";
         private const string SeriesFilePath = "series.json";
         private const string ActorsFilePath = "actors.json";
@@ -175,7 +175,7 @@ namespace Catalogue.Models
             }
         }
         // Generic method to delete an entity from a file
-        public static void DeleteEntity<T>(int entityId, string filePath)
+        private static void DeleteEntity<T>(int entityId, string filePath)
         {
             List<T> entities = LoadEntities<T>(filePath);
             int index = entities.FindIndex(e => (int)e.GetType().GetProperty("Id").GetValue(e) == entityId);

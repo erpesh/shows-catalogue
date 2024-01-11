@@ -35,21 +35,13 @@ namespace Catalogue.Models
         {
             try
             {
+                // If no arguments are specified
                 if (args.Length == 0)
                 {
                     throw new InvalidCommandException($"Type '{appName} help' to see available commands.");
                 }
 
-                // Declaring variable to prevent scope issues in switch statements
                 string command = args[0].ToLower();
-                // TODO: remove unused variables
-                string type;
-                string subcommand;
-                int id;
-                string username;
-                List<Film> films;
-                List<Series> seriesList;
-                List<Actor> actors;
 
                 switch (command)
                 {
@@ -228,7 +220,6 @@ namespace Catalogue.Models
 
             Console.WriteLine("Series editing complete.");
         }
-
         private void EditActor(Actor actor)
         {
             Console.WriteLine("Editing actor details. Press Enter to skip a field.");
@@ -570,7 +561,7 @@ namespace Catalogue.Models
             var username = DataStorage.LoadUsername();
             if (string.IsNullOrWhiteSpace(username))
             {
-                throw new UnauthorizedAccessException("Please log in to use this command.");
+                throw new UnauthorizedAccessException("Please log in to add shows to your list.");
             }
 
             // Check if subcommand is specified
@@ -661,7 +652,9 @@ namespace Catalogue.Models
                 var existingItem = DataStorage.LoadListItem(username, type, id);
                 if (existingItem != null)
                 {
+                    DataStorage.DeleteListItem(username, type, id);
                     existingItem.Status = status;
+                    DataStorage.SaveListItem(existingItem);
                     Console.WriteLine("List item updated.");
                     return;
                 }
